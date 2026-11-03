@@ -1,0 +1,13 @@
+{
+  "name": "surface_small",
+  "n": 4,
+  "generators": [
+    "XXII",
+    "IIXX",
+    "ZZZZ"
+  ],
+  "metadata": {
+    "family": "small_development_control",
+    "note": "Surface control is the four-data-qubit distance-two patch"
+  }
+}

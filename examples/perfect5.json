@@ -1,0 +1,14 @@
+{
+  "name": "perfect5",
+  "n": 5,
+  "generators": [
+    "XZZXI",
+    "IXZZX",
+    "XIXZZ",
+    "ZXIXZ"
+  ],
+  "metadata": {
+    "family": "small_development_control",
+    "note": ""
+  }
+}

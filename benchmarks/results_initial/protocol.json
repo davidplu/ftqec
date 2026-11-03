@@ -1,0 +1,1 @@
+{"codes": ["surface_small", "perfect5"], "further_shots": 32, "generations": 2, "initial_shots": 16, "population": 4, "proof_work": 10000, "seed": 104729, "source": "18dc33dbff0f59418113a06c0e2faa1273c3bf6f18847574b4bbaa76bdb9ba6a", "strategies": ["random", "witness", "multifidelity", "hybrid"], "target": 2}

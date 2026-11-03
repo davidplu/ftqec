@@ -1,0 +1,6 @@
+cff-version: 1.2.0
+message: "Please consult the project owner before citing unpublished research results."
+title: "FTQEC: Stabilizer syndrome-extraction optimization"
+type: software
+version: 0.1.0
+# Authors and publication identifiers must be supplied by the project owner.

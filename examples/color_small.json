@@ -1,0 +1,16 @@
+{
+  "name": "color_small",
+  "n": 7,
+  "generators": [
+    "IIIXXXX",
+    "IXXIIXX",
+    "XIXIXIX",
+    "IIIZZZZ",
+    "IZZIIZZ",
+    "ZIZIZIZ"
+  ],
+  "metadata": {
+    "family": "small_development_control",
+    "note": "Color control is the seven-qubit triangular color/Steane equivalence; not an independent family sample"
+  }
+}

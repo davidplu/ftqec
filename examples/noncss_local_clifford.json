@@ -1,0 +1,14 @@
+{
+  "name": "noncss_local_clifford",
+  "n": 5,
+  "generators": [
+    "YZZYI",
+    "IYZZY",
+    "YIYZZ",
+    "ZYIYZ"
+  ],
+  "metadata": {
+    "family": "small_development_control",
+    "note": "Local Clifford perfect-code variant; not an independent family sample"
+  }
+}

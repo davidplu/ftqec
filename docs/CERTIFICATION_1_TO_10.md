@@ -1,0 +1,13 @@
+# Certification of integer circuit-distance targets
+
+For target d, exclude every legal harmful undetected fault set with weight less than d. One physical gate alternative counts as one fault, including correlated two-qubit Paulis; at most one alternative per location is legal. Idle noise is not silently added to the explicit-operation fault model. Boundaries are ideal initial/final syndrome, not a complete physical-memory experiment.
+
+Target one verifies ideal semantics and regenerates the complete inventory; its only lower-bound obligation is zero faults. A single harmful fault cannot invalidate target one. Targets two and three use exact low-weight logic. Higher integer targets, including even values, use graph potentials when every physical alternative is graph-eligible under a sound detector projection. Final-syndrome-only projections are available in addition to temporal differences; dropping detectors is conservative. No hyperedge splitting is used for certification.
+
+The checker independently regenerates the inventory by forward bit-plane propagation and compares its canonical hash, then checks every integer edge inequality and root/logical-coordinate coverage. Upper witnesses are independently replayed as legal physical fault sets. Bounded location-exclusive dynamic programming remains available for graph-ineligible cases. Every integer milestone is reported; no silent target downgrade occurs. UNKNOWN preserves the achieved rigorous lower bound and unresolved weights.
+
+Algebraic code distance has a separate certificate: all single-data-Pauli effects generate a graph relaxation, and an independent string-based Pauli calculation validates the inventory and graph potentials. A nontrivial commuting Pauli supplies the upper bound. This method can be ineligible for a general stabilizer code. Algebraic claims are never substituted for circuit proofs.
+
+The development test suite independently certifies code-only generated circuits at targets 1 through 10, tests even targets, target-one screening, invalid upper witnesses, tampering and continuation. Experimental discoveries are reported separately from tests and reference validation.
+
+The signed noiseless-flow oracle is Stim's existing validation method. In the installed Stim version, signed flow checks use 256 randomized checks (documented false-acceptance bound 2^-256). Batching preserves that assumption. The complete physical Pauli inventories, graph-potential inequalities and harmful-witness replays are deterministic; their distance claims are conditioned on the declared extraction instrument. This probabilistic ideal-flow validation is disclosed rather than presented as a formal verification of the entire software stack.

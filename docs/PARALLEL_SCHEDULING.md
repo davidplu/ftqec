@@ -1,0 +1,11 @@
+# Parallel scheduling
+
+The conservative dependency DAG retains explicit dependencies and the original order of noncommuting shared-qubit operations. RESET, preparation, measurement and unsupported commutations remain ordered. Exact Clifford commutation rules permit disjoint operations, CZ/CZ, suitable CX/CX and CX/CZ pairs to reorder. Records and detector references retain their identities. The actual output IR is reordered and dependencies remapped; resources come from that circuit.
+
+List, critical-path, conflict-color and resource-priority ready-set policies enforce qubit exclusivity. They are heuristics, with no optimality claim. A bounded exhaustive subset-layer solver handles small unit-duration DAGs; it claims optimality only when the search completes, and only for that declared conservative DAG. It is not a large-circuit CP-SAT backend.
+
+The code-only construction operator jointly searches hook-guided interaction orders and colors. For CSS checks of weight at most four, it builds finite domains using stabilizers and derived logicals, then uses minimum-remaining-domain constraint search. Dedicated ancillas and separate X/Z interaction phases make valid colorings compile into real circuits. No coordinates, known reference schedules or successful reference circuits enter this operator. Its graph bounds guide construction only; all adopted outputs receive complete physical certification.
+
+Population generation retains broad architecture sampling, mutation, basis changes and legacy hook ordering. The new coloring constructor is enabled in the optimizer, while the existing standalone generation API retains its default behavior. Every transformed circuit must pass noiseless semantics, fresh physical-fault evaluation and independent certification. A lower computed depth does not itself establish fault tolerance.
+
+Physical-witness mutation now inspects ancilla Pauli effects during data interactions. Hook witnesses select generic adjacent or nested flag intervals; other witnessed mechanisms also trigger interaction-order repair. The optimizer records the witness hash, affected checks and chosen repair. This is a diagnosis-driven candidate proposal, followed by fresh screening, simulation and full certification. No original witness address or Shor-specific schedule is embedded.

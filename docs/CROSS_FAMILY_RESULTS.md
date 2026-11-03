@@ -1,0 +1,7 @@
+# Cross-family construction and evaluation
+
+Surface, Steane, Shor-product and a Hamming hypergraph-product construction are distinct declared inputs. Steane and its seven-qubit color-code alias are not counted twice. The added hypergraph-product input uses the nonzero binary columns of a three-by-seven Hamming parity-check matrix, with H_X=[H tensor I_7 | I_3 tensor H^T] and H_Z=[I_7 tensor H | H^T tensor I_3]. Only stabilizer input is provided to the optimizer.
+
+The construction follows [Tillich and Zemor's hypergraph-product paper](https://arxiv.org/abs/0903.0566). The specific finite code's ranks, commutation and distance require independent local checks; literature construction claims do not certify its extraction circuit. Development and prospectively frozen family trials are distinguished in the final results. No broad held-out generalization claim follows from a small finite family set.
+
+The completed frozen trial uses verified algebraic inputs [[100,1,10]], [[7,1,3]], [[16,1,4]] and[[58,16,3]]. Autonomous positives occur for surface, Steane and Hamming-HGP; no autonomous Shor4 positive appears in the declared populations. Full counts, failed outcomes, seed-specific resources and measured costs are in [Table C](RESULTS.md). All certified family Pareto alternatives are preserved in results/cross_family/competitive_export/ and the additional frontier delivery bundles.

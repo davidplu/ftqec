@@ -1,0 +1,16 @@
+{
+  "name": "steane",
+  "n": 7,
+  "generators": [
+    "IIIXXXX",
+    "IXXIIXX",
+    "XIXIXIX",
+    "IIIZZZZ",
+    "IZZIIZZ",
+    "ZIZIZIZ"
+  ],
+  "metadata": {
+    "family": "small_development_control",
+    "note": ""
+  }
+}

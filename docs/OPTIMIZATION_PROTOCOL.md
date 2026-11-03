@@ -1,0 +1,11 @@
+# Optimization protocol
+
+The immutable prior epoch is recorded in results/general_competitive/baseline. Previous results, limitations, protocol and artifact manifest were copied before modification. Development and final studies use separate source-bound directories; all failed, interrupted and UNKNOWN records remain available.
+
+The prospective final protocol is emitted before measurements by scripts/general_campaign.py and binds its driver hash, scientific source, runtime, inputs, seeds, fault model, decoders, finite trial populations, per-task safeguards and success criteria. The population study covers targets one through ten, repeated target-ten seeds, Steane, Shor and a small color-code input. The known Shor witness is explicitly development evidence. These families are not undisclosed held-out benchmarks.
+
+Local evaluator processes use memory-aware admission, bounded per-task CPU/active-wall work, durable optimizer checkpoints and source/runtime/config-bound resume. No billable cloud resources or public pushes are authorized or used. Public optimization remains anytime when no generation count is supplied; finite experimental trials do not establish global convergence.
+
+Report total completed worker CPU, controller CPU, elapsed and active wall time, peak memory, proof work, independent replay cost and censored outcomes. Compare method results on the same compiled circuits and requested targets. Cross-strategy compute superiority requires matched actual-compute evidence, not equal calls or generations. Decoder-conditional LER comparisons use matching versus lookup, fixed noise/shot settings, independent seeds and explicit uncertainty; zero failures never mean zero logical error probability.
+
+A preserved random-control interruption exposed an expensive noiseless-validation action outside the evaluator supervisor. Construction now runs in isolated, resource-bounded workers. Genomes and parent provenance are checkpointed before construction; admission pause resumes the exact candidate. Construction limits produce UNKNOWN records rather than invalid-circuit labels. Matched random/hybrid controls use identical 30-second CPU and 60-second active-wall per-action allowances, with no global optimizer time cutoff.

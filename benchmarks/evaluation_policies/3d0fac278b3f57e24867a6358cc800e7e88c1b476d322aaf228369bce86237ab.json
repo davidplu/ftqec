@@ -1,0 +1,1 @@
+{"driver": "scripts/large_scale_policy_study.py", "policies": ["direct", "fixed", "adaptive"], "scope": "Identical frozen seven-circuit pool with separately retained current and prior truths. Runtime protocol is written before the first evaluation.", "source": "3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab"}

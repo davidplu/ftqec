@@ -1,0 +1,84 @@
+{
+  "source_commit": "5c0319e48313a71466da745cae0095523fa0e1bf",
+  "retained_methods": [
+    {
+      "path": "serialization.py",
+      "sha256": "532cde6414d2b63695074d7b2efd3d9cb75bf6fcec6542a7d4195bdd33bfd06a",
+      "decision": "REUSE_UNCHANGED",
+      "acceptance": "Independent new regression required before acceptance"
+    },
+    {
+      "path": "codes/pauli.py",
+      "sha256": "ad08f20ea8fa8e93f76de8ae089c5a056e4c979e04f2eb82b485123f9037aa9c",
+      "decision": "REUSE_UNCHANGED",
+      "acceptance": "Independent new regression required before acceptance"
+    },
+    {
+      "path": "codes/symplectic.py",
+      "sha256": "17a4f994c730d7faa72985b9341c9270319506cdcf13af839c25baedf741a42d",
+      "decision": "REUSE_UNCHANGED",
+      "acceptance": "Independent new regression required before acceptance"
+    },
+    {
+      "path": "codes/logicals.py",
+      "sha256": "c0f56b3cf33e71271815cb6205206a9d313c4b9ea47502bf962ff174ff3117ec",
+      "decision": "REUSE_UNCHANGED",
+      "acceptance": "Independent new regression required before acceptance"
+    },
+    {
+      "path": "codes/stabilizer.py",
+      "sha256": "a45f0904473646c7c1994db326556a33e19f40791f5634c71228da46a8f63d49",
+      "decision": "REUSE_UNCHANGED",
+      "acceptance": "Independent new regression required before acceptance"
+    },
+    {
+      "path": "circuits/model.py",
+      "sha256": "88b7a1fdf343299912de2202c610482b4e3cc10bba646bdfcbfd98b0a9534991",
+      "decision": "REUSE_UNCHANGED",
+      "acceptance": "Independent new regression required before acceptance"
+    },
+    {
+      "path": "circuits/gadgets.py",
+      "sha256": "716f33e0efc173fe65cb012eed2f9546f2bc2f2a1063c9cdd0838abe562c8625",
+      "decision": "REUSE_UNCHANGED",
+      "acceptance": "Independent new regression required before acceptance"
+    },
+    {
+      "path": "faults/propagation.py",
+      "sha256": "0eea01a80f211df40c705b13641712c0fa56d1f87d51edbfbace0e7f4a2707ad",
+      "decision": "REUSE_UNCHANGED",
+      "acceptance": "Independent new regression required before acceptance"
+    },
+    {
+      "path": "faults/signatures.py",
+      "sha256": "c9c6ced3918939b42ac3cf4a76315e67e2904fd4ae2309338429560490454749",
+      "decision": "REUSE_UNCHANGED",
+      "acceptance": "Independent new regression required before acceptance"
+    },
+    {
+      "path": "faults/verification.py",
+      "sha256": "70805d2f0ae4f7c22b3a22a394bee1f5ef64ac3d4793d997b01d5f1204a0fecb",
+      "decision": "REUSE_UNCHANGED",
+      "acceptance": "Independent new regression required before acceptance"
+    },
+    {
+      "path": "faults/search.py",
+      "sha256": "143b39832da9b6f0d0a19828b300dbf3c4ec632e6d58cdff7d591b99c186a095",
+      "decision": "REUSE_UNCHANGED",
+      "acceptance": "Independent new regression required before acceptance"
+    },
+    {
+      "path": "scheduling/scheduler.py",
+      "sha256": "5ea2118e9d497a5b618fe8e540b5275abf7dcab9ded642d8bc3571b13125425d",
+      "decision": "REUSE_UNCHANGED",
+      "acceptance": "Independent new regression required before acceptance"
+    },
+    {
+      "path": "evaluation/resources.py",
+      "sha256": "3e4a261e757948d4ff3edbf38f212c2617f73c3f078fefeaf7042b7dcdc6ad0a",
+      "decision": "REUSE_UNCHANGED",
+      "acceptance": "Independent new regression required before acceptance"
+    }
+  ],
+  "credit": "Scientific methods adapted from the existing FTQEC experimental implementation. No authorship or collaboration agreement is implied."
+}

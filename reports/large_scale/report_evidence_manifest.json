@@ -1,0 +1,27 @@
+{
+  "source": "3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab",
+  "files": {
+    "results\\large_scale\\campaigns\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\protocol.json": "504cce754f50c68e65fba4a9a1e602d2257db94977116e3ce4e094247c98d0da",
+    "results\\populations\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\study\\shor3_hybrid_p10000_n10000_s2001\\experiment_receipt.json": "87ec596f876bc9c228b97d463ccded4cdd3e2babdc4915968be117204a3b471e",
+    "results\\populations\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\study\\shor3_hybrid_p1000_n10000_s2001\\experiment_receipt.json": "16331fe1decae1fdd1c627e329c996ee9a84dbbbbf52877166355cc6c50afee2",
+    "results\\populations\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\study\\shor3_hybrid_p100_n1000_s2001\\experiment_receipt.json": "7b27473d74a36945979aebfbc8d72a2c9ac100c1ba6f25f7b38715afac6b24c0",
+    "results\\populations\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\study\\shor3_hybrid_p100_n100_s2001\\experiment_receipt.json": "b192d0c5f9c78b8fc8c8050bc0218f7846cc4956ccd89cb44ad268f9e919797e",
+    "results\\populations\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\study\\surface3_hybrid_p10000_n10000_s2001\\experiment_receipt.json": "d1dbc1c73ac604f75b0e96a93ac61f40dc086706103b58bba6f2c4ec14ec9e64",
+    "results\\populations\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\study\\surface3_hybrid_p1000_n10000_s2001\\experiment_receipt.json": "b03656a839cb6fac1b66a478c2c34f883f622b4d17a160ca90b5443df0eb223b",
+    "results\\populations\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\study\\surface3_hybrid_p1000_n1000_s2002\\experiment_receipt.json": "c77927b6ce2c6f6ce81939e53a7e34f0b002027153bcc27824922bdc0d74dd24",
+    "results\\populations\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\study\\surface3_hybrid_p100_n1000_s2001\\experiment_receipt.json": "41c073c4dbfc086b06810b658f93e82b8d4b40e2fe023feb9eee4159d775af7f",
+    "results\\populations\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\study\\surface3_hybrid_p100_n1000_s2002\\experiment_receipt.json": "8a373f4c870b7f676501b1cabb10b97b4c6359c1406d1b3f68cd28d1586102c0",
+    "results\\populations\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\study\\surface3_hybrid_p100_n100_s2001\\experiment_receipt.json": "7074be2c626b9f87d7bb4d12e7c5c7544a77d96937417132715fc90a1e764c78",
+    "results\\large_scale\\audit\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\subsets\\19c69c961ce54849cb90806c270536ceeac78f0669ead2a302c4aadf8ff4bfc6\\summary.json": "81ec30587988292285f531ae2e1c00ebbcd7b8b40dbbd905e21ac1eff2e18b8b",
+    "results\\large_scale\\audit\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\subsets\\1c1062d0c8e200388dcd4bd7296ca73900dd8cf8c5075f1dd48f3edc08b399c1\\summary.json": "069f04a4b0606a16fdf98043c72a02beedbe92ae0b1f57bdf6f923bea548ddcc",
+    "results\\large_scale\\audit\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\subsets\\12156b307f28130cf396b3690f4d321e683c3b8005c58cad07c49b96ec208d3f\\summary.json": "4ba8374e6023fa9c321bc919938abbf221c79b1842490d54a1f65afa30306cca",
+    "results\\large_scale\\audit\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\subsets\\0656e718226475f065606e9692a432c0f7fb7d0ba3b29b975da5fb8ef10d260c\\summary.json": "df5e0825367054bbfbf95b6ef4fc1f4ee24eaa398554b1eabbcc1b6977c78a0c",
+    "results\\large_scale\\audit\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\subsets\\e7262425da0251dbc4ea9e88d47bf9cf92b821a313ad6e12e7aaa45132af04e5\\summary.json": "135d66a65318cc8ca2b431e1654202853349677ba74c0f01d8261aad62ba9efe",
+    "results\\large_scale\\audit\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\subsets\\a46c02db412d793d3560bb4635d13ae21c97f4a1fa959c61c0a4492c7efeb698\\summary.json": "a00277143f5c4a9c9a32d08f32a9949d1bcf8c55461ecd1ac6da6db448f8ab2c",
+    "results\\populations\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\study\\shor3_hybrid_p10000_n10000_s2001\\checkpoint.json": "02469500cce6d0164f7edfcecf56f28211d07ff7a1479d5bc3990f5c6f250842",
+    "results\\large_scale\\validation_pipeline\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\state.json": "9c280a11707ee0a516f3f05711500eeac8baa664f0aa73408803766d11701bd1",
+    "results\\large_scale\\supplemental_validation\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\state.json": "0b923baee467599a8b859f0468726e7f177278a64103e0951810a9fd666d3497",
+    "results\\large_scale\\policy_evidence_audit\\3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab\\state.json": "734575abc996c392dc5d8f312644060dd818b3ca5d30285bc3a134ad68360d1d"
+  },
+  "report_sha256": "44576495435d8d466939a85d2c6e5469b85077a6b43824155ca51329cbe88706"
+}

@@ -1,0 +1,5 @@
+src/** -text
+scripts/** -text
+docs/** -text
+results/** -text
+benchmarks/** -text

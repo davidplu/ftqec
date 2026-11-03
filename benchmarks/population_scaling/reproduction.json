@@ -1,0 +1,1 @@
+{"driver": "scripts/cost_study.py", "input": "examples/steane.json", "mapping": "seed+i for i in range(count)", "scope": "Reconstructible streaming compilation. Per-circuit IR was not retained for the10000 scaling-only run; full evaluated pools and proof evidence are retained.", "seed": 982451653, "source": "fd9a4612a3374cc2e30a4bf1f32af59a4231ab33260a7789ecc030342b951045"}

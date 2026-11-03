@@ -1,0 +1,9 @@
+# Generic multi-fault repair
+
+The population mutation path now offers a reproducible six-arm portfolio combining adjacent, nested, and overlapping length-three flag intervals; interaction-order changes on all checks implicated by a multi-fault witness; verified-cat extraction with additional verification rounds; repeated extraction; critical-path scheduling; and allocation compaction. Existing random generation, stabilizer-basis mutation, cat alternatives, and population recombination remain available.
+
+These are candidate operators, not preservation theorems. Every descendant is recompiled and checked for signed noiseless stabilizer semantics, then receives a new physical fault inventory and resource accounting. Witness-guided mutations preserve parent identities and witness hashes in optimizer checkpoints. A diagnostic gate label alone is not treated as a unique cause.
+
+[The six-arm repair protocol](../results/repair_trajectories/d9b1e28e6919cb04178ec813ffe6ad477d0ba546163a45255714d28030a13306/shor5_six_arm/protocol.json) starts from a verified negative for mechanism development. It is separate from [the code-only population protocol](../results/non_graphlike/d9b1e28e6919cb04178ec813ffe6ad477d0ba546163a45255714d28030a13306/population_study/protocol.json), which receives only stabilizer inputs. Transferring a historical fault requires an unambiguous operation context; failed transfer is NOT_TRANSFERABLE, not proof that the mechanism was eliminated. Removing a transferred witness is never a positive certificate.
+
+The first independently certified target-five discovery came from random verified-cat generation and the existing exact MITM engine. It must not be attributed to the new repair operators or the new separator backend. Composed repairs are reported independently in the final result tables.
