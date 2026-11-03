@@ -1,6 +1,6 @@
 # Certification research paused
 
-Paused at user request. This branch preserves experimental changes, not an adopted improvement. The original baseline remains on codex/large-scale-populations.
+Paused at user request. This branch preserves experimental changes, not an adopted improvement. The published baseline remains on the default branch; its original local history is preserved separately.
 
 The baseline suite passed 126 tests. Both historical target-5 positives were independently verified again. Eager range indexes increased CPU cost and caused one positive to hit its resource limit. Deferred index construction restored positive completion but did not improve total CPU: low-qubit 21.21875 versus 19.390625 seconds; low-QD 37.265625 versus 15.34375 seconds. These are single-run measurements. The prior UNKNOWN remained UNKNOWN under all three configurations. No new target-7 or target-10 certificate was obtained.
 
