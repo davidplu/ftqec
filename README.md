@@ -2,7 +2,7 @@
 
 FTQEC 0.1.0 is a research toolkit for synthesizing, screening, simulating, and independently certifying stabilizer-code syndrome-extraction circuits. It compiles actual circuits and preserves the distinction between physical resource estimates, simulation results, harmful fault witnesses, and rigorous certificates.
 
-**Research status:** the certification campaign is paused. The default branch preserves the baseline implementation. Experimental MITM indexing changes and their negative performance results are on `codex/certification-research-20261102`; they are not adopted improvements. This repository is a publication snapshot. Large historical proof databases and full local Git history are not included; see [publication scope](PUBLICATION_STATUS.md).
+**Research status:** the certification campaign is paused. The default branch preserves the baseline implementation. Experimental MITM indexing changes and their negative performance results are preserved on the separate experimental branch; they are not adopted improvements. This repository is a publication snapshot. Large historical proof databases and full local Git history are not included; see [publication scope](PUBLICATION_STATUS.md).
 
 ## Quick start
 
@@ -70,6 +70,10 @@ ftqec certify exported/steane/circuit.json --target 5 --proof-method mitm --proo
 | UNSUPPORTED | Chosen method cannot soundly handle the input/model |
 
 Certificates use operation-local faults and ideal syndrome boundaries. They do **not** establish arbitrary-input physical-memory protection. Monte Carlo results are conditional on decoder, noise model, preparation sector, sample size, and uncertainty. Zero observed failures is not zero logical error rate.
+
+## Continuous integration
+
+The `tests / scientific (push)` job runs the full test suite, selected Ruff checks, and mypy. Check the latest run for the branch and commit you are viewing; older failed runs remain in the history after a fix. [View main-branch test runs](https://github.com/davidplu/ftqec/actions/workflows/tests.yml?query=branch%3Amain).
 
 ## Documentation
 
