@@ -1,0 +1,11 @@
+{
+  "campaign_id": "certification_20261102",
+  "start_utc": "2026-11-02T20:42:39.824848+00:00",
+  "deadline_utc": "2026-11-03T20:42:39.824848+00:00",
+  "start_unix": 1793652159.824848,
+  "deadline_unix": 1793738559.824848,
+  "monotonic_reference": 218787.218,
+  "host": "DavidLu_Win11",
+  "source": "3d0fac278b3f57e24867a6358cc800e7e88c1b476d322aaf228369bce86237ab",
+  "commit": "e3ad4dbf843711a75c7382f21ef4070c1bac5f2b"
+}

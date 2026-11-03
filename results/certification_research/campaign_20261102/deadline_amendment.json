@@ -1,0 +1,9 @@
+{
+  "reason": "User instruction: run now limit to 10 hours",
+  "original_clock": "clock.json",
+  "recorded_unix": 1793653105.6903343,
+  "start_unix": 1793652159.824848,
+  "deadline_unix": 1793688159.824848,
+  "deadline_utc": "2026-11-03T06:42:39.824848+00:00",
+  "limit_seconds": 36000
+}

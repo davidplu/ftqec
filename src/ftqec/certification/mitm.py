@@ -145,12 +145,13 @@ def _build(db, groups, size, budget, independent=False):
 
 
 def _producer_join(db, groups, weight, budget):
+    db.execute('CREATE INDEX IF NOT EXISTS lead_range ON halves(k,d,lead,l,ids)')
     left = weight//2
     right = weight-left
     examined = 0
     for d,l,ids,tail in db.execute('SELECT d,l,ids,tail FROM halves WHERE k=? ORDER BY ids',(left,)):
         budget.tick()
-        for blob, in db.execute('SELECT ids FROM halves INDEXED BY effects WHERE k=? AND d=? AND l!=? AND lead>? ORDER BY ids',(right,d,l,tail)):
+        for blob, in db.execute('SELECT ids FROM halves INDEXED BY lead_range WHERE k=? AND d=? AND l!=? AND lead>? ORDER BY ids',(right,d,l,tail)):
             budget.tick()
             examined += 1
             ids_all = _unpack(ids)+_unpack(blob)
@@ -161,13 +162,14 @@ def _producer_join(db, groups, weight, budget):
 
 
 def _checker_join(db, groups, weight, budget):
+    db.execute('CREATE INDEX IF NOT EXISTS tail_range ON halves(k,d,tail,l,ids)')
     # Reverse traversal of the right index, with the left boundary predicate.
     right = (weight+1)//2
     left = weight-right
     examined = 0
     for d,l,blob,lead in db.execute('SELECT d,l,ids,lead FROM halves WHERE k=? ORDER BY ids DESC',(right,)):
         budget.tick()
-        for other, in db.execute('SELECT ids FROM halves INDEXED BY effects WHERE k=? AND d=? AND l!=? AND tail<? ORDER BY ids DESC',(left,d,l,lead)):
+        for other, in db.execute('SELECT ids FROM halves INDEXED BY tail_range WHERE k=? AND d=? AND l!=? AND tail<? ORDER BY ids DESC',(left,d,l,lead)):
             budget.tick()
             examined += 1
             ids = _unpack(other)+_unpack(blob)
