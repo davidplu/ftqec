@@ -79,7 +79,7 @@ def independent_dp(inv,target,work_limit,state_limit=100000):
 
 def certify(c,target=3,work=200000,directory=None,method="auto"):
     MODEL,SCOPE=contract(c)
-    if method not in ("auto","graph","dp","mitm","sat","decomposition","decomposition_legacy","decomposition_span"):
+    if method not in ("auto","graph","dp","mitm","triples","sat","decomposition","decomposition_legacy","decomposition_span"):
         raise ValueError("Unsupported proof method: "+str(method))
     if type(target) is not int or target<1:raise ValueError("Requested target must be a positive integer")
     from ..screening.structural import check as structural_check
@@ -126,7 +126,14 @@ def certify(c,target=3,work=200000,directory=None,method="auto"):
                     for channel in channels:
                         channel["potentials"]=[[min(x,lower) for x in row] for row in channel["potentials"]];channel["lower_bound"]=lower
                     accepted_proof=dict(proof,method="graph_potentials",channels=channels)
-                if method in ("auto","decomposition","decomposition_legacy","decomposition_span"):
+                if method in ("auto","triples") and lower<min(target,4):
+                    from . import triples
+                    p=triples.prove(inv,work);dp_parts.append(p)
+                    if p.get("witness"):
+                        w=negative(c,p["witness"])
+                        if w:return dict(base,status="INVALID",lower_bound=1,producer_lower_bound=lower,upper_bound=len(w["faults"]),witness=w,proof=p,independent=verify_witness(c,w))
+                    elif p["complete"]:lower=4;accepted_proof=p
+                if method in ("auto","decomposition","decomposition_legacy","decomposition_span") and lower<target:
                     from . import decomposition,span_decomposition,quotient_decomposition
                     backend=decomposition if method=="decomposition_legacy" else span_decomposition if method=="decomposition_span" else quotient_decomposition
                     p=backend.prove(inv,target,work);dp_parts.append(p)
@@ -205,6 +212,10 @@ def verify(c,cert,work=200000):
         if method==decomposition.VERSION:return decomposition.verify(inv,proof,bound,work)
         from . import sat
         if method==sat.VERSION:return sat.verify(inv,proof,bound,work)
+        from . import triples
+        if method==triples.VERSION:
+            if independent_pairs(inv)<3:return dict(verified=False,reason="streamed triple singleton/pair prefix")
+            return triples.verify(inv,proof,bound,work)
         from . import mitm
         if method==mitm.VERSION:
             if proof.get("start_weight")!=3 or independent_pairs(inv)<3:

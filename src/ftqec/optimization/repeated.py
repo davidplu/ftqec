@@ -108,6 +108,8 @@ def optimize(data,output,rounds,target,population=12,generations=None,workers=1,
                 state['generation']+=1;state.pop('pending',None);state['status']='RUNNING';persist()
             else:state['status']='REQUESTED_GENERATIONS_COMPLETED'
         except MemoryError as exc:state.update(status='RESOURCE_SAFETY_INTERVENTION',reason=str(exc))
+        except Exception as exc:
+            state.update(status='INTERRUPTED_ERROR',reason=type(exc).__name__+': '+str(exc));raise
         finally:
             state['sessions'].append(dict(cpu=time.process_time()-cpu,wall=time.perf_counter()-began));persist()
             positives=[r for r in state['rows'] if r.get('certify',{}).get('status')=='CERTIFIED']

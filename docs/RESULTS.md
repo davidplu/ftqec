@@ -264,3 +264,5 @@ The release receipt records the final commit, source and integrity manifests. No
 ## 2BGA development (November 2026)
 
 The supplied archive and baseline are preserved in the new local epoch. Algebraic validation of all 17 inputs and independent distance-4 enumeration for three small codes are recorded there. Repeated-memory certification outcomes must be read from the new epoch report; interface support or test counts are not positive scientific evidence. See [2BGA benchmarks](2BGA_BENCHMARKS.md).
+
+The completed code-only streamed population independently certifies the supplied [[24,2,4]] code for four physical noisy memory rounds in both X/Z sectors. Its best paired discovery has Q=192, D=96/94, QD=18432/18048 and 2016 two-qubit gates per sector. This is an operation-local, separately prepared/read-out sector result, not arbitrary-input encoding or published-reference competitiveness. See [the complete report](../reports/2bga/REPORT.md).

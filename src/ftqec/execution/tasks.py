@@ -112,11 +112,16 @@ def guarded(task,queued=None):
         with (root/"stderr.txt").open("w") as log:
             start=time.perf_counter();active_start=active_time()
             process=subprocess.Popen(worker_command(root/"task.json",root/"answer.json"),stdout=log,stderr=log)
-            monitor=psutil.Process(process.pid);peak=0;used=0.;reason=None
+            monitor=None;peak=0;used=0.;reason=None;monitor_failures=0
             while process.poll() is None:
                 try:
-                    peak=max(peak,monitor.memory_info().rss);t=monitor.cpu_times();used=t.user+t.system
-                except psutil.NoSuchProcess:break
+                    if monitor is None:monitor=psutil.Process(process.pid)
+                    peak=max(peak,monitor.memory_info().rss);t=monitor.cpu_times();used=t.user+t.system;monitor_failures=0
+                except (psutil.NoSuchProcess,psutil.AccessDenied):
+                    if process.poll() is not None:break
+                    monitor=None;monitor_failures+=1
+                    if monitor_failures>=3:reason="MONITOR_UNAVAILABLE";process.kill();break
+                    time.sleep(.02);continue
                 if peak>task.limits.get("memory_mb",256)*1024**2:reason="MEMORY_LIMIT"
                 cpu_limit=task.limits.get("cpu_seconds",120)
                 wall_limit=task.limits.get("wall_seconds",180)
