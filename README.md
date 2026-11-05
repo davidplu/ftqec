@@ -81,6 +81,7 @@ The `tests / scientific (push)` job runs the full test suite, selected Ruff chec
 - [Installation and troubleshooting](docs/INSTALLATION.md)
 - [CLI workflows and recovery](docs/USER_GUIDE.md)
 - [2BGA inputs](docs/2BGA_CODES.md), [repeated-round search](docs/LOW_DEPTH_OPTIMIZATION.md), and [development evidence](docs/2BGA_BENCHMARKS.md)
+- [2BGA repeated-memory results](reports/2bga/README.md): independently checked four-round distance-four discoveries, lower-qubit alternatives, and remaining limitations.
 - [Developer guide and CI](docs/DEVELOPMENT.md)
 - [Certification methods and scientific contract](docs/CERTIFICATION_GUIDE.md)
 - [Evidence and reproduction](docs/EVIDENCE_GUIDE.md)

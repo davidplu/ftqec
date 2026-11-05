@@ -9,3 +9,7 @@ build/
 dist/
 .mypy_cache/
 .ruff_cache/
+
+# Local supplied-code research evidence includes private correspondence.
+results/2bga/epoch-20261105/
+FTQEC_2BGA_evidence_*.zip
