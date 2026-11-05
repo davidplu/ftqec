@@ -10,6 +10,12 @@ ftqec optimize examples/steane.json --output runs/smoke --generations 1 --popula
 
 For larger populations use `--storage sqlite`, `--window 32`, and `--promotion 8`. `--candidate-goal` requests a finite number of meaningful circuit structures; generated proposals, distinct physical identities, and structural classes are different counts. The current window can overshoot the requested goal. A candidate goal is not a guarantee that every candidate is simulated or certified.
 
+Use `--no-time-limits` to disable both worker CPU and elapsed-time cutoffs for a long evaluation. Memory safeguards and `ftqec cancel` remain active. This option does not change the physical fault model, proof-work allowance, generation count, or certification requirements. Defaults remain 300 CPU seconds and 600 active elapsed seconds per task. Changed settings require a new output directory; old checkpoints retain their original settings and source identity.
+
+```bash
+ftqec optimize code.json --output runs/unlimited-time --no-time-limits
+```
+
 `--target-distance` aliases `--target`. Available strategies are `random`, `witness`, `multifidelity`, `hybrid`, `costaware`, and `costhybrid`. Available decoders are `auto`, `matching`, and `one_mechanism_lookup`. Use `ftqec optimize --help` for defaults. A strategy name does not establish empirical superiority.
 
 ## Cancel and resume
