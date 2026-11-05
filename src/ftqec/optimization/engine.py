@@ -31,8 +31,8 @@ class Config:
     decoder: str="auto"
     max_decoder_faults: int=100000
     memory_mb: int=512
-    task_cpu_seconds: float=300
-    task_wall_seconds: float=600
+    task_cpu_seconds: float|None=300
+    task_wall_seconds: float|None=600
     convergence_generations: int=8
     storage: str="auto"
     window: int=32

@@ -105,8 +105,10 @@ def guarded(task,queued=None):
                     peak=max(peak,monitor.memory_info().rss);t=monitor.cpu_times();used=t.user+t.system
                 except psutil.NoSuchProcess:break
                 if peak>task.limits.get("memory_mb",256)*1024**2:reason="MEMORY_LIMIT"
-                if used>task.limits.get("cpu_seconds",120):reason="CPU_LIMIT"
-                if active_time()-active_start>task.limits.get("wall_seconds",180):reason="ACTION_WALL_LIMIT"
+                cpu_limit=task.limits.get("cpu_seconds",120)
+                wall_limit=task.limits.get("wall_seconds",180)
+                if cpu_limit is not None and used>cpu_limit:reason="CPU_LIMIT"
+                if wall_limit is not None and active_time()-active_start>wall_limit:reason="ACTION_WALL_LIMIT"
                 if task.limits.get("cancel_file") and Path(task.limits["cancel_file"]).exists():reason="CANCELLED"
                 if reason:process.kill();break
                 time.sleep(.02)
