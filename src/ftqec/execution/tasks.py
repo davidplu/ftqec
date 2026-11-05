@@ -28,6 +28,19 @@ def execute(task):
     if task.source!=source_identity():raise ValueError("Scientific source mismatch")
     if task.runtime!=runtime_identity():raise ValueError("Scientific runtime mismatch")
     start=time.perf_counter();cpu=time.process_time()
+    if task.tier=="construct_2bga":
+        from ..codes.two_block import parse
+        from ..architectures.group_schedule import architecture
+        from ..circuits.repeated import memory
+        from ..screening.structural import check
+        from ..evaluation.resources import resources
+        try:
+            single=architecture(parse(task.circuit['code_input']),task.circuit.get('genome',dict(order=task.circuit.get('order'))),task.seed)
+            circuits=[memory(single,task.circuit['rounds'],basis,task.circuit.get('idles',False)) for basis in ('X','Z')]
+            for c in circuits:check(c)
+            result=dict(status='STRUCTURALLY_VALID',single=single.to_dict(),circuits=[c.to_dict() for c in circuits],resources=[resources(c) for c in circuits])
+        except ValueError as exc:result=dict(status='STRUCTURALLY_INVALID',reason=str(exc))
+        return dict(task=task.identity,result=result,cpu=time.process_time()-cpu,wall=time.perf_counter()-start,rss=psutil.Process().memory_info().rss,pid=os.getpid())
     if task.tier in ("construct","construct_screen"):
         from ..codes.input import load
         from ..architectures.population import Genome,compile

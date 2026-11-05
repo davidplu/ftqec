@@ -25,16 +25,16 @@ def fault_at(c,i,label):
     return Fault(i,op.qubits,label,kind,f"op:{i}",round_index=op.round_index,check=op.check,role=op.role,interval=op.interval,interaction_position=op.interaction_position)
 
 def backward(c):
-    inv=Inventory();nd=len(c.detectors)+len(c.code.generators);nl=2*c.code.k+len(c.observables);pairs=logical_basis(c.code);record_maps={}
+    inv=Inventory();legacy=c.boundary_model=='ideal_initial_and_final_syndrome';nd=len(c.detectors)+(len(c.code.generators) if legacy else 0);nl=(2*c.code.k if legacy else 0)+len(c.observables);pairs=logical_basis(c.code);record_maps={}
     for i,det in enumerate(c.detectors):
         for rec in det:record_maps[rec]=record_maps.get(rec,0)^(1<<i)
     for i,obs in enumerate(c.observables):
-        for rec in obs:record_maps[rec]=record_maps.get(rec,0)^(1<<(nd+2*c.code.k+i))
+        for rec in obs:record_maps[rec]=record_maps.get(rec,0)^(1<<(nd+(2*c.code.k if legacy else 0)+i))
     xm=[];zm=[]
     for q in range(c.num_qubits):
         for z,out in ((False,xm),(True,zm)):
             p=Pauli(c.code.n,0 if z or q>=c.code.n else 1<<q,(1<<q) if z and q<c.code.n else 0)
-            out.append((c.code.syndrome(p)<<len(c.detectors))|(logical_effect(p,pairs)<<nd)|(p.packed<<(nd+nl)))
+            out.append(((c.code.syndrome(p)<<len(c.detectors))|(logical_effect(p,pairs)<<nd) if legacy else 0)|(p.packed<<(nd+nl)))
     for i in range(len(c.operations)-1,-1,-1):
         op=c.operations[i];g=op.gate;a=op.qubits[0] if op.qubits else 0
         if g!="BARRIER":
@@ -56,7 +56,7 @@ def backward(c):
     inv.finish();return inv
 
 def forward(c,batch_size=128):
-    inv=Inventory();faults=iter(enumerate_faults(c));pairs=logical_basis(c.code)
+    inv=Inventory();legacy=c.boundary_model=='ideal_initial_and_final_syndrome';faults=iter(enumerate_faults(c));pairs=logical_basis(c.code) if legacy else []
     while batch:=list(islice(faults,batch_size)):
         x=[0]*c.num_qubits;z=[0]*c.num_qubits;records={};events={}
         for lane,f in enumerate(batch):events.setdefault(f.operation,[]).append((lane,f))
@@ -85,7 +85,7 @@ def forward(c,batch_size=128):
             bits=0
             for rec in det:bits^=records[rec]
             transpose(bits,ds,j)
-        for j,p in enumerate(c.code.generators):
+        for j,p in enumerate(c.code.generators if legacy else []):
             bits=0
             for q in range(c.code.n):
                 if p.z>>q&1:bits^=x[q]
@@ -101,7 +101,7 @@ def forward(c,batch_size=128):
         for j,obs in enumerate(c.observables):
             bits=0
             for rec in obs:bits^=records[rec]
-            transpose(bits,ls,2*c.code.k+j)
+            transpose(bits,ls,(2*c.code.k if legacy else 0)+j)
         for q in range(c.code.n):transpose(x[q],data,q);transpose(z[q],data,c.code.n+q)
         for lane,f in enumerate(batch):inv.add(f,ds[lane],ls[lane],data[lane])
     inv.finish();return inv

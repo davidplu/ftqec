@@ -259,3 +259,8 @@ All-known historical and new certified discovery alternatives remain in [the mer
 Install the matching wheel/source and run `ftqec verify-export BUNDLE --proof-work 20000000 --require-certified`. Optimize into a fresh output directory; never overwrite frozen folders. Raw settings, seeds, task identities, circuits, failures, proof states and source snapshots accompany delivery. The previous scientific archive is separately preserved and hash-referenced.
 
 The release receipt records the final commit, source and integrity manifests. No public push occurred.
+
+
+## 2BGA development (November 2026)
+
+The supplied archive and baseline are preserved in the new local epoch. Algebraic validation of all 17 inputs and independent distance-4 enumeration for three small codes are recorded there. Repeated-memory certification outcomes must be read from the new epoch report; interface support or test counts are not positive scientific evidence. See [2BGA benchmarks](2BGA_BENCHMARKS.md).

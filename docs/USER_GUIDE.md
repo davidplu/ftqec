@@ -1,5 +1,19 @@
 # CLI workflows and recovery
 
+## Repeated noisy CSS memory experiments
+
+For the supplied 2BGA JSON convention, validate the algebra and optimize actual repeated circuits:
+
+```bash
+ftqec validate-2bga code.json --output algebra.json
+ftqec optimize code.json --memory-rounds 4 --target-distance 4 --population 8 --generations 2 --workers 2 --no-time-limits --output runs/memory
+ftqec list-results --run runs/memory --all
+```
+
+Use the exact circuit identity returned by `list-results` with the existing export commands. Each X or Z memory sector has a separate identity and certificate. Both are required for the paired frontier. `UNKNOWN` remains unresolved even when export reconstruction succeeds. See [repeated extraction](REPEATED_ROUND_EXTRACTION.md), [search and allocation](LOW_DEPTH_OPTIMIZATION.md), [certification](REPEATED_ROUND_CERTIFICATION.md), and [development results](2BGA_BENCHMARKS.md).
+
+The physical task uses noisy product preparation, repeated CSS measurements and destructive data readout. It is not an arbitrary-input encoder certificate. Storage noise is absent unless `--explicit-idles` is selected. For other CSS codes, `ftqec repeat single-circuit.json --rounds 4 --memory-basis Z --output memory.json` constructs the same declared task from a validated single-round template. The existing general stabilizer optimizer remains available without `--memory-rounds`.
+
 ## Optimize a code
 
 A bounded smoke run:

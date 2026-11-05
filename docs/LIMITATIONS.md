@@ -14,3 +14,8 @@ The graph-ineligible non-surface target-five milestone is demonstrated. Other re
 - The historical raw guard-only bundle export edge case remains; this cycle exports certified finalists.
 
 See RESULTS.md for all gates and source-bound evidence.
+
+
+## Repeated-memory scope
+
+The new physical-memory experiments cover separately prepared and destructively read out X/Z logical sectors, not arbitrary-input encoding or hardware routing. The specialized population requires supplied multiplication-table metadata; generic CSS templates can use the repeat constructor. It explores group-term, bare, flagged, cat and verified-cat circuits with selected ancilla allocations, but this finite vocabulary is not an exhaustive architecture search. BP-OSD and certified fault-orbit reductions are not implemented in this driver. Matching is used only with a supported correlated graph decomposition; the fallback one-mechanism decoder is limited and must not establish decoder-independent architectural superiority.

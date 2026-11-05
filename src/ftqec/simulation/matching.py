@@ -35,8 +35,8 @@ def evaluate_matching(c, p, shots, seed, max_decoder_faults=100000):
                 decoder_version=pymatching.__version__, decoder_build_cost=build,
                 decoder_inference_cost=dict(cpu=time.process_time()-dc, wall=time.perf_counter()-tick),
                 decoder_assumptions="correlation-aware two-pass matching heuristic, not optimal ML",
-                detector_basis="invertible temporal differences",
-                noise="operation_depolarizing_reset_X_measurement_flip_perfect_boundaries",
+                detector_basis="physical temporal history" if c.boundary_model=="repeated_noisy_memory" else "invertible temporal differences",
+                noise="physical_memory_operation_local" if c.boundary_model=="repeated_noisy_memory" else "operation_depolarizing_reset_X_measurement_flip_perfect_boundaries",
                 approximation="no disjoint-channel approximation; suggested correlated decomposition used",
                 stim_hash=digest(str(sc)), dem_hash=digest(str(dem)), cpu=time.process_time()-cpu,
                 wall=time.perf_counter()-start)

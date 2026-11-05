@@ -8,7 +8,15 @@ from ..results.artifacts import digest,source_identity
 MODEL="operation-local uniform Pauli alternatives; measurement flips; explicit gates only; perfect code-space boundaries"
 SCOPE="detector_model_with_ideal_initial_and_final_syndrome_not_complete_physical_memory"
 
+def contract(c):
+    if c.boundary_model=='repeated_noisy_memory':
+        return ('operation-local Pauli alternatives; physical product preparation and destructive readout; measurement flips; explicit gates and idles only',
+                'repeated_css_memory_logical_'+str(c.experiment.get('memory_basis'))+'_sector_no_ideal_syndrome_boundaries')
+    return MODEL,SCOPE
+
+
 def screen(c,work=100000,target=3):
+    _,SCOPE=contract(c)
     if type(target) is not int or target<1:raise ValueError("Positive target required")
     if target==1:return dict(status="NO_WITNESS_FOUND",scope=SCOPE,work=0,reason="No positive fault weights below target one")
     from .inventory import backward,fault_at

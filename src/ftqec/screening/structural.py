@@ -56,6 +56,9 @@ def legacy_check(c):
 
 
 def check(c):
+    if c.boundary_model=='repeated_noisy_memory':
+        from ..circuits.repeated import validate_memory
+        return validate_memory(c)
     c.validate();sim=stim.TableauSimulator();sim.do(initial_state(c));known=set(range(c.code.n));initial_measurements=len(sim.current_measurement_record())
     for op in c.operations:
         if op.gate in ("PREP","RESET"):known.add(op.qubits[0])

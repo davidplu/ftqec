@@ -4,6 +4,8 @@ from ..results.artifacts import digest
 
 
 def projections(c):
+    if c.boundary_model=="repeated_noisy_memory":
+        return {bit:[[1<<j for j in range(len(c.detectors))]] for bit in range(len(c.observables))}
     nd=len(c.detectors)+len(c.code.generators);syndrome={};other=[];records={o.record:o for o in c.operations if o.record}
     for i,row in enumerate(c.detectors):
         relevant=[records[r] for r in row if "_s" in r or records[r].role=="syndrome_readout"]

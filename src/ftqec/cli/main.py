@@ -9,6 +9,10 @@ def main():
     sub=p.add_subparsers(dest="command",required=True)
     o=sub.add_parser("optimize");o.add_argument("code",type=Path);o.add_argument("--output",type=Path,default=Path("runs/local"));o.add_argument("--generations",type=int);o.add_argument("--population",type=int,default=24);o.add_argument("--workers",type=int,default=1);o.add_argument("--seed",type=int,default=0);o.add_argument("--target","--target-distance",type=int,default=3);o.add_argument("--strategy",choices=["random","witness","multifidelity","hybrid","costaware","costhybrid"],default="hybrid")
     o.add_argument("--decoder",choices=["auto","matching","one_mechanism_lookup"],default="auto");o.add_argument("--proof-work",type=int,default=20000000);o.add_argument("--convergence-generations",type=int,default=8)
+    o.add_argument("--memory-rounds",type=int,help="Evaluate supplied 2BGA architecture populations in both physical memory sectors")
+    o.add_argument("--memory-shots",type=int,default=128,help="Initial shots per memory sector; selected finalists receive a separate 4x batch")
+    o.add_argument("--memory-noise",type=float,default=.001,help="Operation-local error probability for physical memory experiments")
+    o.add_argument("--explicit-idles",action="store_true",help="Include active storage locations in repeated memory")
     o.add_argument("--synthesis-mode",choices=("legacy","joint"),default="joint")
     o.add_argument("--no-time-limits",action="store_true",help="Disable worker CPU and elapsed-time cutoffs; retain memory safeguards and cancellation")
     o.add_argument("--storage",choices=("auto","json","sqlite"),default="auto");o.add_argument("--window",type=int,default=32);o.add_argument("--promotion",type=int,default=8);o.add_argument("--candidate-goal",type=int)
@@ -20,7 +24,22 @@ def main():
     v=sub.add_parser("verify-export");v.add_argument("path",type=Path);v.add_argument("--proof-work",type=int,default=20000000);v.add_argument("--require-certified",action="store_true")
     t=sub.add_parser("render-schedule");t.add_argument("schedule",type=Path);t.add_argument("--output",type=Path,required=True);t.add_argument("--start",type=int,default=0);t.add_argument("--stop",type=int);t.add_argument("--qubits",type=int,default=32)
     l=sub.add_parser("list-results");l.add_argument("--run",type=Path,default=Path("runs/local"));l.add_argument("--all",action="store_true")
+    b=sub.add_parser('validate-2bga');b.add_argument('code',type=Path);b.add_argument('--output',type=Path,required=True)
+    r=sub.add_parser('repeat');r.add_argument('circuit',type=Path);r.add_argument('--rounds',type=int,required=True);r.add_argument('--memory-basis',choices=('X','Z'));r.add_argument('--explicit-idles',action='store_true');r.add_argument('--output',type=Path,required=True)
     a=p.parse_args()
+    if a.command=='validate-2bga':
+        from ..codes.two_block import parse
+        result=parse(json.loads(a.code.read_text())).receipt;save(a.output,result);print(json.dumps(result));return
+    if a.command=='repeat':
+        from ..circuits.model import Circuit
+        from ..circuits.repeated import repeat,memory
+        from ..screening.structural import check
+        c=Circuit.from_dict(json.loads(a.circuit.read_text()));c=memory(c,a.rounds,a.memory_basis,a.explicit_idles) if a.memory_basis else repeat(c,a.rounds)
+        check(c);save(a.output,c.to_dict());print(json.dumps(dict(output=str(a.output),rounds=a.rounds,boundary_model=c.boundary_model)));return
+    if a.command=='optimize' and a.memory_rounds is not None:
+        from ..optimization.repeated import optimize as optimize_memory
+        state=optimize_memory(json.loads(a.code.read_text()),a.output,a.memory_rounds,a.target,population=a.population,generations=a.generations,workers=a.workers,seed=a.seed,work=a.proof_work,no_time_limits=a.no_time_limits,idles=a.explicit_idles,decoder=a.decoder,proof_method=a.proof_method,shots=a.memory_shots,p=a.memory_noise)
+        print(json.dumps(dict(status=state['status'],circuits=len(state['rows']),output=str(a.output))));return
     if a.command=="list-results":
         from ..delivery.export import list_results
         print(json.dumps(list_results(a.run,a.all)));return

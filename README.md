@@ -69,7 +69,7 @@ ftqec certify exported/steane/circuit.json --target 5 --proof-method mitm --proo
 | UNKNOWN | Proof incomplete; retain verified partial bounds and outstanding obligations |
 | UNSUPPORTED | Chosen method cannot soundly handle the input/model |
 
-Certificates use operation-local faults and ideal syndrome boundaries. They do **not** establish arbitrary-input physical-memory protection. Monte Carlo results are conditional on decoder, noise model, preparation sector, sample size, and uncertainty. Zero observed failures is not zero logical error rate.
+Historical extraction certificates use operation-local faults and ideal syndrome boundaries. The opt-in [repeated CSS memory workflow](docs/REPEATED_ROUND_EXTRACTION.md) instead models physical product preparation, repeated measurements and destructive readout, with separate X and Z sector certificates. Neither task establishes arbitrary-input encoding protection. Monte Carlo results are conditional on decoder, noise model, preparation sector, sample size, and uncertainty. Zero observed failures is not zero logical error rate.
 
 ## Continuous integration
 
@@ -80,6 +80,7 @@ The `tests / scientific (push)` job runs the full test suite, selected Ruff chec
 - [Documentation guide](docs/README.md)
 - [Installation and troubleshooting](docs/INSTALLATION.md)
 - [CLI workflows and recovery](docs/USER_GUIDE.md)
+- [2BGA inputs](docs/2BGA_CODES.md), [repeated-round search](docs/LOW_DEPTH_OPTIMIZATION.md), and [development evidence](docs/2BGA_BENCHMARKS.md)
 - [Developer guide and CI](docs/DEVELOPMENT.md)
 - [Certification methods and scientific contract](docs/CERTIFICATION_GUIDE.md)
 - [Evidence and reproduction](docs/EVIDENCE_GUIDE.md)

@@ -32,7 +32,7 @@ def schedule_payload(c):
         groups[start].append(i)
         for q in op.qubits:
             previous[q] = i
-            if q < c.code.n:
+            if q < c.code.n or op.gate=='BARRIER':
                 continue
             if op.gate in ('RESET', 'PREP'):
                 if q in active:
@@ -61,6 +61,9 @@ def stim_text(c, p=0):
     The arbitrary-input certificate includes X and Z logical effects; this Stim
     experiment prepares a logical-Z sector. It is not a physical-memory export.
     """
+    if c.boundary_model=='repeated_noisy_memory':
+        from ..circuits.repeated import stim_model
+        return str(stim_model(c,p))
     if not 0 <= p <= 1:
         raise ValueError('Noise probability must be in [0,1]')
     from ..screening.structural import initial_state
@@ -125,6 +128,8 @@ def export_result(run, circuit_id, output, format='bundle', noise_p=None):
         raise ValueError('Optimizer circuit identity mismatch')
     candidate_id=circuit_id
     circuit_id=exact_identity
+    from ..certification.exact import contract
+    MODEL,SCOPE=contract(c)
     p = noise_p if noise_p is not None else state.get('config', {}).get('p', .001)
     out = Path(output)
     if out.exists():
@@ -136,7 +141,7 @@ def export_result(run, circuit_id, output, format='bundle', noise_p=None):
         save(out, c.to_dict()); return dict(output=str(out), format=format, circuit=circuit_id)
     if format == 'stim':
         out.write_text(stim_text(c,p), encoding='utf-8')
-        save(str(out)+'.identity.json', dict(circuit=circuit_id, circuit_payload=c.to_dict(), exporter_source=source_identity(), evidence_source=state['source'], fault_model=MODEL, scope=SCOPE, noise_probability=p, qualification='Logical-Z-sector Stim experiment with ideal boundaries; see circuit payload for the complete certified task'))
+        save(str(out)+'.identity.json', dict(circuit=circuit_id, circuit_payload=c.to_dict(), exporter_source=source_identity(), evidence_source=state['source'], fault_model=MODEL, scope=SCOPE, noise_probability=p, qualification=('Physical CSS memory '+str(c.experiment.get('memory_basis'))+' sector; explicit preparation/readout and declared idle policy') if c.boundary_model=='repeated_noisy_memory' else 'Logical-Z-sector Stim experiment with ideal boundaries; see circuit payload for the complete certified task'))
         return dict(output=str(out), format=format, circuit=circuit_id)
     out.mkdir()
     certificate = row.get('certify')
@@ -167,6 +172,9 @@ def export_result(run, circuit_id, output, format='bundle', noise_p=None):
     (out/'REPRODUCE.txt').write_text('Install the matching FTQEC scientific source and run:\nftqec verify-export "'+str(out.resolve())+'" --proof-work 20000000\nThe verifier reconstructs schedule rows, checks all bindings and replays proof evidence. Ideal initial/final operations in circuit.stim are simulation boundaries, not certified physical memory. Proof recipes are embedded in certificate.json; independent replay reconstructs physical inventories and proof tables.\n',encoding='utf-8')
     (out/'schedule.txt').write_text('\n'.join('Layer '+str(g['start'])+': '+'; '.join(str(i)+':'+c.operations[i].gate+'('+','.join(map(str,c.operations[i].qubits))+')' for i in g['operations']) for g in packets['schedule.json']['parallel_groups'])+'\n',encoding='utf-8')
     import hashlib
+    if c.boundary_model=='repeated_noisy_memory':
+        note=out/'REPRODUCE.txt'
+        note.write_text(note.read_text().replace('Ideal initial/final operations in circuit.stim are simulation boundaries, not certified physical memory.', 'All preparation, extraction, enabled storage, and destructive readout are explicit physical fault locations. This certificate covers the declared logical Pauli memory sector.'),encoding='utf-8')
     members={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in out.iterdir() if p.is_file()}
     save(out/'manifest.json',dict(schema=VERSION,circuit=circuit_id,candidate_id=candidate_id,schedule=packets['schedule.json']['schedule_identity'],evidence_source=state['source'],exporter_source=source_identity(),fault_model=MODEL,scope=SCOPE,members=members))
     return dict(output=str(out),format=format,circuit=circuit_id,schedule=packets['schedule.json']['schedule_identity'],recorded_certification=certificate.get('status') if certificate else 'NOT_RUN')

@@ -1,0 +1,13 @@
+{
+  "name": "C3 two-block integration control (not a supplied research benchmark)",
+  "n": 6,
+  "generators": ["XIXXIX", "XXIXXI", "ZZIZZI", "IZZIZZ"],
+  "metadata": {
+    "multiplication_table": [[0, 1, 2], [1, 2, 0], [2, 0, 1]],
+    "a": [0, 1],
+    "b": [0, 1],
+    "k": 2,
+    "group_order": 3,
+    "abelian": true
+  }
+}

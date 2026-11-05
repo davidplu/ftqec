@@ -11,6 +11,9 @@ def interval(failures,shots):
     return [max(0.,mid-half),min(1.,mid+half)]
 
 def model(c,p,detector_basis="raw"):
+    if c.boundary_model=="repeated_noisy_memory":
+        from ..circuits.repeated import stim_model
+        return stim_model(c,p)
     if not 0<=p<=1:raise ValueError("Physical probability")
     circuit=initial_state(c);records={};nm=0
     for op in c.operations:
@@ -91,4 +94,4 @@ def evaluate(c,p,shots,seed,max_decoder_faults=10000,decoder="one_mechanism_look
         failures+=prediction!=l
     inference_cost=dict(cpu=time.process_time()-decoder_cpu,wall=time.perf_counter()-decoder_wall)
     return dict(decoder_build_cost=build_cost,decoder_inference_cost=inference_cost,p=p,shots=shots,failures=failures,decoder_unknown=unknown,rate=failures/shots,confidence=interval(failures,shots),seed=seed,
-        decoder="one_mechanism_max_probability_lookup_with_zero_fallback",noise="operation_depolarizing_reset_X_measurement_flip_perfect_boundaries",stim_hash=digest(str(sc)),cpu=time.process_time()-cpu,wall=time.perf_counter()-start)
+        decoder="one_mechanism_max_probability_lookup_with_zero_fallback",noise="physical_memory_operation_local" if c.boundary_model=="repeated_noisy_memory" else "operation_depolarizing_reset_X_measurement_flip_perfect_boundaries",stim_hash=digest(str(sc)),cpu=time.process_time()-cpu,wall=time.perf_counter()-start)

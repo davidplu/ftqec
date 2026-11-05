@@ -9,3 +9,8 @@ Every adopted claim requires independent replay and exact source/circuit/model b
 The exact original six-arm driver is frozen with its hash. A later driver-only correction also recognizes FAULT_INVALID and writes a different output directory. All six original screen results were NO_WITNESS_FOUND, so scientific outcomes are unaffected.
 
 Use fresh output directories for reproduction. Frozen experiment folders are immutable audit records. Delivery includes integrity hashes, source, a tested wheel and independently verifiable bundles.
+
+
+## 2BGA repeated-memory development epoch
+
+See [benchmark protocol](2BGA_BENCHMARKS.md). The earlier large-population matrix remains separate and unfinished. New experiments do not inherit its deadlines. Compare physical memory sectors at matched noise, rounds and measured compute; no reference seeds.

@@ -45,7 +45,7 @@ def reconstruct(payload):
         if op.gate=='M':nm+=1
         for q in op.qubits:
             last[q]=i;work[q]+=duration
-            if q < c.code.n:
+            if q < c.code.n or op.gate=='BARRIER':
                 continue
             if op.gate in ('RESET','PREP'):
                 if q in active:
@@ -80,7 +80,7 @@ def verify_stim(c, text, p):
     for op in c.operations:
         if op.record:records[op.record]=nm
         if op.gate=='M':nm+=1
-    for i,row in enumerate(c.observables,start=c.code.k):
+    for i,row in enumerate(c.observables if c.boundary_model=="ideal_initial_and_final_syndrome" else [],start=c.code.k):
         expected.append('OBSERVABLE_INCLUDE',[stim.target_rec(records[r]-expected.num_measurements) for r in row],i)
     def normalized(circuit):
         out=stim.Circuit()
@@ -115,6 +115,8 @@ def verify_bundle(path, work=20000000, replay_proof=True):
     candidate_id=evidence['row']['id']
     if evidence['row']['circuit']!=c.to_dict() or candidate_id not in (circuit,physical_identity(c)) or manifest.get('candidate_id',candidate_id)!=candidate_id or evidence['row'].get('certify')!=cert:
         raise ValueError('Optimizer evidence binding')
+    from ..certification.exact import contract
+    MODEL,SCOPE=contract(c)
     if manifest.get('fault_model')!=MODEL or manifest.get('scope')!=SCOPE or evidence.get('noise_model')!=MODEL or evidence.get('scope')!=SCOPE:
         raise ValueError('Fault model mismatch')
     if evidence['optimizer_source']!=manifest['evidence_source'] or evidence['exporter_source']!=manifest['exporter_source'] or digest(evidence['source_records'])!=manifest['exporter_source']:

@@ -2,7 +2,7 @@
 import time
 from .inventory import backward,forward,fault_at
 from .structural import graph,produce,check,projections,dp
-from .exact import MODEL,SCOPE
+from .exact import contract
 from ..faults.verification import replay,verify_witness
 from ..results.artifacts import digest,source_identity
 
@@ -31,15 +31,17 @@ def logical_upper_witness(c):
     return min(found,key=lambda w:len(w["faults"])) if found else None
 
 def pairs(inv):
-    groups={}
+    groups={};pair_witness=None
     for op,label,d,l,data in inv.rows():
         if not d and l:return 1,[(op,label)]
+        if pair_witness is not None:continue
         items=groups.setdefault(d,[])
         # At most three representatives suffice for the two-coordinate inequality test.
         for old_l,old_op,old_label in items:
-            if l!=old_l and op!=old_op:return 2,[(old_op,old_label),(op,label)]
+            if l!=old_l and op!=old_op:
+                pair_witness=[(old_op,old_label),(op,label)];break
         if len(items)<3 and not any(l==a and op==b for a,b,c in items):items.append((l,op,label))
-    return 3,None
+    return (2,pair_witness) if pair_witness is not None else (3,None)
 
 def independent_pairs(inv):
     # Separate ordered detector scan, different from producer representative search.
@@ -76,13 +78,14 @@ def independent_dp(inv,target,work_limit,state_limit=100000):
     return not any(l for level in levels for d,l in level if not d)
 
 def certify(c,target=3,work=200000,directory=None,method="auto"):
+    MODEL,SCOPE=contract(c)
     if method not in ("auto","graph","dp","mitm","sat","decomposition","decomposition_legacy","decomposition_span"):
         raise ValueError("Unsupported proof method: "+str(method))
     if type(target) is not int or target<1:raise ValueError("Requested target must be a positive integer")
     from ..screening.structural import check as structural_check
     structural_check(c)
     base=dict(circuit=digest(c.to_dict()),source=source_identity(),fault_model=MODEL,scope=SCOPE,target=target,requested_target=target)
-    if c.boundary_model!="ideal_initial_and_final_syndrome" or c.code.k<1:return dict(base,status="UNKNOWN",lower_bound=1,unresolved=["unsupported task semantics"])
+    if c.boundary_model not in ("ideal_initial_and_final_syndrome","repeated_noisy_memory") or c.code.k<1:return dict(base,status="UNKNOWN",lower_bound=1,unresolved=["unsupported task semantics"])
     inv=backward(c)
     try:
         if target==1:
@@ -168,13 +171,14 @@ def certify(c,target=3,work=200000,directory=None,method="auto"):
     finally:inv.close()
 
 def verify(c,cert,work=200000):
+    MODEL,SCOPE=contract(c)
     if cert.get("circuit")!=digest(c.to_dict()) or cert.get("source")!=source_identity() or cert.get("fault_model")!=MODEL or cert.get("scope")!=SCOPE:return dict(verified=False,reason="identity")
     target=cert.get("target")
     if type(target) is not int or target<1 or cert.get("requested_target",target)!=target:return dict(verified=False,reason="target")
     from ..screening.structural import check as structural_check
     structural_check(c)
     if digest(c.to_dict())!=cert["circuit"]:return dict(verified=False,reason="circuit changed during ideal validation")
-    if c.boundary_model!="ideal_initial_and_final_syndrome" or c.code.k<1:return dict(verified=False,reason="task semantics")
+    if c.boundary_model not in ("ideal_initial_and_final_syndrome","repeated_noisy_memory") or c.code.k<1:return dict(verified=False,reason="task semantics")
     if "exact_distance" in cert and (cert["status"]!="CERTIFIED" or cert["exact_distance"]!=target or cert.get("upper_bound")!=target):return dict(verified=False,reason="exact-distance claim")
     if cert["status"]=="INVALID":
         if cert.get("lower_bound")!=1 or cert.get("upper_bound")!=len(cert.get("witness",{}).get("faults",[])):return dict(verified=False,reason="negative bound claim")
@@ -209,8 +213,8 @@ def verify(c,cert,work=200000):
         if method=="dp":return dict(verified=independent_dp(inv,bound,work),lower_bound=bound,method="independent per-weight suffix-support DP",inventory_count=inv.count)
         if method!="graph_potentials":return dict(verified=False,reason="unknown recipe")
         channels=proof.get("channels",[])
-        if sorted(p["bit"] for p in channels)!=list(range(2*c.code.k+len(c.observables))):return dict(verified=False,reason="logical coverage")
-        nd=len(c.detectors)+len(c.code.generators)
+        if sorted(p["bit"] for p in channels)!=list(range((2*c.code.k if c.boundary_model=="ideal_initial_and_final_syndrome" else 0)+len(c.observables))):return dict(verified=False,reason="logical coverage")
+        nd=len(c.detectors)+(len(c.code.generators) if c.boundary_model=="ideal_initial_and_final_syndrome" else 0)
         for p in channels:
             if any(type(m) is not int or m<0 or m>>nd for m in p["masks"]):return dict(verified=False,reason="projection")
             g=graph(inv,p["masks"],p["bit"])
