@@ -7,8 +7,8 @@ from ..results.artifacts import save
 def main():
     p=argparse.ArgumentParser(description="FTQEC syndrome-extraction population research")
     sub=p.add_subparsers(dest="command",required=True)
-    o=sub.add_parser("optimize");o.add_argument("code",type=Path);o.add_argument("--output",type=Path,default=Path("runs/local"));o.add_argument("--generations",type=int);o.add_argument("--population",type=int,default=24);o.add_argument("--workers",type=int,default=1);o.add_argument("--seed",type=int,default=0);o.add_argument("--target","--target-distance",type=int,default=3);o.add_argument("--strategy",choices=["random","witness","multifidelity","hybrid","costaware","costhybrid"],default="hybrid")
-    o.add_argument("--decoder",choices=["auto","matching","one_mechanism_lookup"],default="auto");o.add_argument("--proof-work",type=int,default=20000000);o.add_argument("--convergence-generations",type=int,default=8)
+    o=sub.add_parser("optimize");o.add_argument("code",type=Path);o.add_argument("--output",type=Path,default=Path("runs/local"));o.add_argument("--generations",type=int);o.add_argument("--population",type=int,default=24);o.add_argument("--workers",type=int,default=1);o.add_argument("--seed",type=int,default=0);o.add_argument("--target","--target-distance",type=int,default=3);o.add_argument("--strategy",choices=["random","structured","witness","multifidelity","hybrid","costaware","costhybrid"],default="hybrid")
+    o.add_argument("--decoder",choices=["auto","matching","one_mechanism_lookup","bposd"],default="auto");o.add_argument("--proof-work",type=int,default=20000000);o.add_argument("--convergence-generations",type=int,default=8)
     o.add_argument("--memory-rounds",type=int,help="Evaluate supplied 2BGA architecture populations in both physical memory sectors")
     o.add_argument("--memory-shots",type=int,default=128,help="Initial shots per memory sector; selected finalists receive a separate 4x batch")
     o.add_argument("--memory-noise",type=float,default=.001,help="Operation-local error probability for physical memory experiments")
@@ -38,7 +38,7 @@ def main():
         check(c);save(a.output,c.to_dict());print(json.dumps(dict(output=str(a.output),rounds=a.rounds,boundary_model=c.boundary_model)));return
     if a.command=='optimize' and a.memory_rounds is not None:
         from ..optimization.repeated import optimize as optimize_memory
-        state=optimize_memory(json.loads(a.code.read_text()),a.output,a.memory_rounds,a.target,population=a.population,generations=a.generations,workers=a.workers,seed=a.seed,work=a.proof_work,no_time_limits=a.no_time_limits,idles=a.explicit_idles,decoder=a.decoder,proof_method=a.proof_method,shots=a.memory_shots,p=a.memory_noise)
+        state=optimize_memory(json.loads(a.code.read_text()),a.output,a.memory_rounds,a.target,population=a.population,generations=a.generations,workers=a.workers,seed=a.seed,work=a.proof_work,no_time_limits=a.no_time_limits,idles=a.explicit_idles,decoder=a.decoder,proof_method=a.proof_method,shots=a.memory_shots,p=a.memory_noise,strategy=a.strategy,promotion=a.promotion)
         print(json.dumps(dict(status=state['status'],circuits=len(state['rows']),output=str(a.output))));return
     if a.command=="list-results":
         from ..delivery.export import list_results

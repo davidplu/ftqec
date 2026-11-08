@@ -9,6 +9,7 @@ requires-python = ">=3.11"
 dependencies = ["stim>=1.16", "psutil>=5"]
 [project.optional-dependencies]
 matching = ["pymatching>=2.3,<3"]
+bposd = ["ldpc>=2.4,<3", "scipy>=1.13"]
 dev = ["pytest>=8", "ruff", "mypy"]
 [project.scripts]
 ftqec = "ftqec.cli.main:main"

@@ -28,3 +28,28 @@ def save(path,value):
                 time.sleep(min(.01*(attempt+1),.1))
     finally:
         if os.path.exists(name):os.unlink(name)
+
+def save_checkpoint(path,state):
+    """Encode/hash once with the C encoder; preserve atomic durable replacement.
+
+    The digest excludes its own field exactly as in historical checkpoints.
+    The encoded body replaces the same transient allocation formerly used by
+    digest(), while avoiding millions of Python JSON writer calls.
+    """
+    body={k:v for k,v in state.items() if k!='checkpoint_digest'}
+    encoded=json.dumps(body,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
+    checksum=hashlib.sha256(encoded).hexdigest()
+    footer=((',' if body else '')+'"checkpoint_digest":"'+checksum+'"}').encode()
+    path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
+    fd,name=tempfile.mkstemp(dir=path.parent,suffix='.tmp')
+    try:
+        with os.fdopen(fd,'wb') as stream:
+            stream.write(memoryview(encoded)[:-1]);stream.write(footer);stream.flush();os.fsync(stream.fileno())
+        for attempt in range(40):
+            try:os.replace(name,path);break
+            except PermissionError:
+                if attempt==39:raise
+                time.sleep(min(.01*(attempt+1),.1))
+        state['checkpoint_digest']=checksum
+    finally:
+        if os.path.exists(name):os.unlink(name)

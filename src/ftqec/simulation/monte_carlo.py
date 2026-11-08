@@ -61,7 +61,10 @@ def model(c,p,detector_basis="raw"):
     return circuit
 
 def evaluate(c,p,shots,seed,max_decoder_faults=10000,decoder="one_mechanism_lookup"):
-    if decoder not in ("one_mechanism_lookup","matching","auto"):raise ValueError("Unknown decoder")
+    if decoder not in ("one_mechanism_lookup","matching","auto","bposd"):raise ValueError("Unknown decoder")
+    if decoder=="bposd":
+        from .bposd import evaluate_bposd
+        return evaluate_bposd(c,p,shots,seed,max_decoder_faults)
     if decoder!="one_mechanism_lookup":
         from .matching import evaluate_matching
         answer=evaluate_matching(c,p,shots,seed,max_decoder_faults)
