@@ -2,7 +2,7 @@
 
 FTQEC 0.1.0 is a research toolkit for synthesizing, screening, simulating, and independently certifying stabilizer-code syndrome-extraction circuits. It compiles actual circuits and preserves the distinction between physical resource estimates, simulation results, harmful fault witnesses, and rigorous certificates.
 
-**Research status:** the certification campaign is paused. The default branch preserves the baseline implementation. Experimental MITM indexing changes and their negative performance results are preserved on the separate experimental branch; they are not adopted improvements. This repository is a publication snapshot. Large historical proof databases and full local Git history are not included; see [publication scope](PUBLICATION_STATUS.md).
+**Research status:** this development branch adds an opt-in physical-mechanism and time-collapse certification backend inspired by arXiv:2611.08247. The preserved six-round [[72,12,6]] X- and Z-memory circuits have matching independently replayed lower bounds and physical six-fault witnesses in the November 9 local research epoch. These are circuit- and fault-model-specific results, not general hardware-memory or logical-error-rate claims. See the [integration guide](docs/TROPIDIST_INTEGRATION.md) and [research report](docs/TROPIDIST_RESULTS.md). Historical experimental MITM indexing results remain separate. Large historical proof databases and full local Git history are not included in the publication snapshot; see [publication scope](PUBLICATION_STATUS.md).
 
 ## Quick start
 
