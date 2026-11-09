@@ -80,6 +80,9 @@ def execute(task):
     elif task.tier=="screen":
         from ..certification.exact import screen
         result=screen(c,task.limits["work"],target=task.limits.get("target",3))
+    elif task.tier=="mechanism_relaxation":
+        from ..certification.relaxation_backend import run
+        result=run(c,task.limits["target"],task.limits["proof_directory"],task.limits.get("work",50000000),sector=task.limits.get("sector_projection",False))
     elif task.tier=="certify":
         from ..certification.exact import certify
         result=certify(c,task.limits["target"],task.limits["work"],task.limits.get("proof_directory"),method=task.limits.get("proof_method","auto"))

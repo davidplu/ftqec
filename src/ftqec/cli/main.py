@@ -17,7 +17,7 @@ def main():
     o.add_argument("--no-time-limits",action="store_true",help="Disable worker CPU and elapsed-time cutoffs; retain memory safeguards and cancellation")
     o.add_argument("--storage",choices=("auto","json","sqlite"),default="auto");o.add_argument("--window",type=int,default=32);o.add_argument("--promotion",type=int,default=8);o.add_argument("--candidate-goal",type=int)
     cert=sub.add_parser("certify");cert.add_argument("circuit",type=Path);cert.add_argument("--target",type=int,default=9);cert.add_argument("--proof-work",type=int,default=20000000);cert.add_argument("--output",type=Path,required=True)
-    for parser in (o,cert):parser.add_argument("--proof-method",choices=("auto","graph","dp","mitm","triples","sat","decomposition","decomposition_legacy","decomposition_span"),default="auto")
+    for parser in (o,cert):parser.add_argument("--proof-method",choices=("auto","graph","dp","mitm","triples","sat","decomposition","decomposition_legacy","decomposition_span","time_collapse"),default="auto")
     w=sub.add_parser("worker");w.add_argument("task",type=Path);w.add_argument("output",type=Path)
     c=sub.add_parser("cancel");c.add_argument("output",type=Path)
     e=sub.add_parser("export");e.add_argument("circuit_id");e.add_argument("--run",type=Path,default=Path("runs/local"));e.add_argument("--format",choices=("bundle","stim","schedule-json","circuit-json"),default="bundle");e.add_argument("--output",type=Path,required=True);e.add_argument("--noise-p",type=float)

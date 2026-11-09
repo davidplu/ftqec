@@ -66,7 +66,11 @@ def legacy_verify(c,cert,work=200000):
     return dict(verified=True,examined=count,method="forward_effects_ungrouped_exhaustion")
 
 def certify(c,target=3,work=200000,directory=None,method="auto"):
-    from .high_distance import certify as high
+    if method == 'time_collapse':
+        from .relaxation_portfolio import certify as backend
+        high = lambda c, target, work, directory, method: backend(c, target, work, directory)
+    else:
+        from .high_distance import certify as high
     out=high(c,target,work,directory,method)
     out["result"]=dict(status="UPPER_BOUND" if out["status"]=="INVALID" else "LOWER_BOUND" if out.get("lower_bound",1)>1 else "UNRESOLVED",lower_bound=out.get("lower_bound",1),upper_bound=out.get("upper_bound"),excluded_through=out.get("lower_bound",1)-1,witness=out.get("witness"),reason=out.get("unresolved"),requested_weight=target-1)
     return out
@@ -76,5 +80,8 @@ def verify(c,cert,work=200000):
     if "result" in cert:
         summary=cert["result"]
         if summary.get("lower_bound")!=cert.get("lower_bound") or summary.get("upper_bound")!=cert.get("upper_bound") or summary.get("witness")!=cert.get("witness") or summary.get("excluded_through")!=cert.get("lower_bound",1)-1 or summary.get("requested_weight")!=cert.get("target",1)-1:return dict(verified=False,reason="inconsistent bound summary")
-    from .high_distance import verify as high
+    if cert['proof'].get('method') == 'physical-row-relaxation-1':
+        from .relaxation_portfolio import verify as high
+    else:
+        from .high_distance import verify as high
     return high(c,cert,work)
