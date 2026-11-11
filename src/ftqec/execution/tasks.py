@@ -68,6 +68,10 @@ def execute(task):
             result=dict(status="STRUCTURALLY_INVALID",reason=str(exc))
             if c is not None:result["circuit"]=c.to_dict()
         return dict(task=task.identity,result=result,cpu=time.process_time()-cpu,wall=time.perf_counter()-start,rss=psutil.Process().memory_info().rss,pid=os.getpid())
+    if task.tier=="verify_exact":
+        from ..experiments.verification import verify_exact
+        result=verify_exact(task.circuit,task.limits.get('work',50000000))
+        return dict(task=task.identity,result=result,cpu=time.process_time()-cpu,wall=time.perf_counter()-start,rss=psutil.Process().memory_info().rss,pid=os.getpid())
     if task.tier=="verify":
         from ..certification.exact import verify
         c=Circuit.from_dict(task.circuit["circuit"])
