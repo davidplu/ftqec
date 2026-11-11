@@ -2,6 +2,21 @@
 import argparse,itertools,json,statistics
 from pathlib import Path
 from ftqec.results.artifacts import save,digest
+from ftqec.optimization.store import PopulationStore
+
+
+def compute_receipt(run):
+    receipts=[json.loads(p.read_text()) for p in sorted(run.glob('controller-process-*.json'))]
+    with PopulationStore(run/'population.sqlite',readonly=True) as db:
+        workers=db.worker_cpu()
+        tiers={name:dict(tasks=n,cpu=cpu,summed_wall=wall,peak_rss=peak) for name,n,cpu,wall,peak in db.db.execute('''
+            SELECT t.tier,count(*),sum(e.cpu),sum(e.wall),max(e.peak) FROM execution e JOIN tasks t ON t.id=e.id GROUP BY t.tier''')}
+    return dict(worker_cpu=workers,controller_cpu=sum(r['whole_controller_cpu'] for r in receipts) if receipts else None,
+        controller_elapsed_wall=sum(r['wall'] for r in receipts) if receipts else None,
+        controller_sampled_peak_rss=max((r['sampled_peak_rss'] for r in receipts),default=None),
+        worker_sampled_peak_rss=max((r['peak_rss'] for r in tiers.values()),default=0),tiers=tiers,
+        logical_disk_bytes=sum(p.stat().st_size for p in run.rglob('*') if p.is_file()),
+        qualification='Separate sampled process peaks, not a simultaneous aggregate-memory measurement; no missing controller receipt is imputed as zero')
 
 
 def sign_randomization(differences):
@@ -17,7 +32,7 @@ def sign_randomization(differences):
 def analyze(epoch):
     epoch=Path(epoch);protocols=list(epoch.glob('protocol-A-v*.json'))
     if len(protocols)!=1:raise ValueError('Exactly one frozen fixed-pool protocol required per epoch')
-    spec=json.loads(protocols[0].read_text());records=[];missing=[]
+    spec=json.loads(protocols[0].read_text());records=[];missing=[];compute=[]
     for seed in spec['generator_seeds']:
         block=epoch/'fixed-pool'/f'seed-{seed}'
         available={}
@@ -27,6 +42,7 @@ def analyze(epoch):
             data=json.loads(path.read_text())
             if data['protocol']!=spec['identity']:raise ValueError('Mixed protocols')
             available[policy]=data
+            compute.append(dict(seed=seed,policy=policy,**compute_receipt(path.parent)))
         positive={p['id']:p for data in available.values() for p in data['state']['positive']}
         for policy,data in available.items():
             for offset,point in zip(spec['promotion_cpu_checkpoints'],data['checkpoints']):
@@ -48,7 +64,7 @@ def analyze(epoch):
         if 'frontier' in rows and 'legacy' in rows:
             primary.append(dict(seed=seed,difference=rows['frontier']['hypervolume']-rows['legacy']['hypervolume']))
     diffs=[p['difference'] for p in primary]
-    result=dict(protocol=spec['identity'],records=records,missing=missing,primary_contrast=primary,
+    result=dict(protocol=spec['identity'],records=records,compute=compute,missing=missing,primary_contrast=primary,
         primary_complete=len(primary)==len(spec['generator_seeds']),
         median_difference=statistics.median(diffs) if diffs else None,
         wins=sum(x>0 for x in diffs),ties=sum(x==0 for x in diffs),losses=sum(x<0 for x in diffs),
