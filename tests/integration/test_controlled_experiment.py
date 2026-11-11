@@ -30,5 +30,9 @@ def test_fixed_pool_resume_and_independent_policy_accounting(tmp_path):
         with PopulationStore(root/'population.sqlite',readonly=True) as db:
             worker_cpu=db.worker_cpu();tasks=list(db.packets());assert worker_cpu>0 and tasks
             assert all(t['task']['limits']['cpu_seconds'] is None for t in tasks)
+            cid=next(db.summaries())['id']
+        from ftqec.delivery.export import resolve
+        metadata,row=resolve(root,cid)
+        assert metadata['source']==spec['source'] and row['id']==cid
         run('compare','--pool',str(tmp_path/'pool/pool.json'),'--seed','174001','--policy',policy,'--output',str(root))
         with PopulationStore(root/'population.sqlite',readonly=True) as db:assert db.worker_cpu()==worker_cpu

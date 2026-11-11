@@ -71,3 +71,15 @@ def test_frozen_protocol_rejects_source_or_content_changes(tmp_path):
     assert protocol(tmp_path/'protocol.json')==body
     body['settings']['target']=6;save(tmp_path/'protocol.json',body)
     with pytest.raises(ValueError,match='integrity'):protocol(tmp_path/'protocol.json')
+
+
+def test_progress_accounting_uses_scalar_receipts_without_decoding_payloads(tmp_path):
+    from ftqec.experiments.controlled import scalar_tiers
+    from ftqec.optimization.store import PopulationStore
+    with PopulationStore(tmp_path/'population.sqlite') as db:
+        # Invalid payload bytes intentionally ensure the accounting path cannot
+        # accidentally decompress a completed multi-megabyte circuit record.
+        db.db.execute("INSERT INTO tasks VALUES('a','c','construct_2bga','COMPLETE',X'00','bad',X'00','bad')")
+        db.db.execute("INSERT INTO execution VALUES('a',2.5,4.5,100,0,4.5,123)")
+        db.db.commit()
+        assert scalar_tiers(db)=={'construct_2bga':dict(tasks=1,cpu=2.5,summed_wall=4.5,peak_rss=100)}

@@ -19,12 +19,24 @@ from ..circuits.identity import physical_identity
 from .policies import order,aggregate,hypervolume,checkpoint_frontier
 
 
+def scalar_tiers(db):
+    """Read measured scalars, never decompress scientific payloads for progress.
+
+    Fine-grained queue/serialization/shot records remain in immutable task packets
+    for separately accounted offline analysis. All of their CPU is already included
+    in whole-process worker CPU and controller process_time.
+    """
+    return {tier:dict(tasks=count,cpu=cpu,summed_wall=wall,peak_rss=peak)
+        for tier,count,cpu,wall,peak in db.db.execute('''SELECT t.tier,count(*),sum(e.cpu),sum(e.wall),max(e.peak)
+        FROM execution e JOIN tasks t ON e.id=t.id GROUP BY t.tier''')}
+
+
 class Ledger:
     def __init__(self,root,identity,source,settings,seed,shared_cpu=0.):
         self.root=Path(root);self.root.mkdir(parents=True,exist_ok=True)
         self.lock=RunLock(self.root/'run.lock');self.lock.__enter__()
         self.db=PopulationStore(self.root/'population.sqlite',identity)
-        self.source=source;self.settings=settings;self.seed=seed;self.shared_cpu=shared_cpu
+        self.source=source;self.settings=settings;self.seed=seed;self.shared_cpu=shared_cpu;self.identity=identity
         self.started=time.perf_counter();self.proc=psutil.Process();self.peak=self.proc.memory_info().rss
         self.prior=self.db.get_meta('controller',dict(cpu=0.,wall=0.,clean=True,censored=False))
         self.censored=self.prior['censored'] or not self.prior['clean']
@@ -34,12 +46,17 @@ class Ledger:
     def cpu(self):return self.shared_cpu+self.prior['cpu']+time.process_time()+self.db.worker_cpu()
 
     def persist(self):
+        metadata=self.db.get_meta('state',{})
+        metadata.update(source=self.source,config=self.settings)
+        self.db.set_meta('state',metadata)
+        save(self.root/'checkpoint.json',dict(schema='sqlite-population-1',population_db='population.sqlite',
+             source=self.source,identity=self.identity,status=metadata.get('status','RUNNING')))
         self.peak=max(self.peak,self.proc.memory_info().rss)
         state=dict(cpu=self.prior['cpu']+time.process_time(),wall=self.prior['wall']+time.perf_counter()-self.started,
                    clean=False,censored=self.censored,peak_rss=max(self.peak,self.prior.get('peak_rss',0)))
         self.db.set_meta('controller',state)
         save(self.root/'progress.json',dict(pid=os.getpid(),source=self.source,worker_cpu=self.db.worker_cpu(),
-             controller=state,shared_cpu=self.shared_cpu,total_cpu=self.cpu(),tiers=self.db.totals(),state=self.db.get_meta('state')))
+             controller=state,shared_cpu=self.shared_cpu,total_cpu=self.cpu(),tiers=scalar_tiers(self.db),state=self.db.get_meta('state')))
 
     def evaluate(self,key,tier,payload):
         settings=self.settings
@@ -52,8 +69,8 @@ class Ledger:
         answer=self.db.answer(task.identity)
         if answer is None:
             if (self.root/'cancel.json').exists():raise InterruptedError('Explicit cancellation')
-            batch([task],1,512,on_result=lambda t,a:self.db.complete(t.identity,a))
-            answer=self.db.answer(task.identity)
+            answers=batch([task],1,512,on_result=lambda t,a:self.db.complete(t.identity,a))
+            answer=answers[0]
         self.persist()
         return answer['result']
 
@@ -116,7 +133,7 @@ def build_pool(spec,root,seed,count):
         controller=read.get_meta('controller')
         manifest=dict(identity=identity,protocol=spec['identity'],source=spec['source'],seed=seed,proposals=count,
                       pairs=state['pairs'],aliases=state['aliases'],outcomes=state['outcomes'],
-                      shared_cpu=controller['cpu']+read.worker_cpu(),controller=controller,tiers=read.totals())
+                      shared_cpu=controller['cpu']+read.worker_cpu(),controller=controller,tiers=scalar_tiers(read))
     manifest['hash']=digest(manifest)
     path=Path(root)/'pool.json'
     if path.exists():
