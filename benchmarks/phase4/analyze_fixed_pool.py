@@ -15,7 +15,9 @@ def sign_randomization(differences):
 
 
 def analyze(epoch):
-    epoch=Path(epoch);spec=json.loads((epoch/'protocol-A-v1.json').read_text());records=[];missing=[]
+    epoch=Path(epoch);protocols=list(epoch.glob('protocol-A-v*.json'))
+    if len(protocols)!=1:raise ValueError('Exactly one frozen fixed-pool protocol required per epoch')
+    spec=json.loads(protocols[0].read_text());records=[];missing=[]
     for seed in spec['generator_seeds']:
         block=epoch/'fixed-pool'/f'seed-{seed}'
         available={}
