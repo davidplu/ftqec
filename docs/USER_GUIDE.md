@@ -47,8 +47,8 @@ The frozen baseline has a known pending-final-window recovery defect discovered 
 For experimental paired X/Z repeated-memory discovery, see
 [the paired-memory guide](PHASE3_OPTIMIZATION.md). That driver has no worker CPU
 or elapsed-time cutoff; memory safeguards and proof-work limits remain active.
-Its optional experimental CPU checkpoint is checked between windows and can
-overshoot by an entire window.
+Its optional experimental CPU checkpoint is checked between windows or final
+proof pairs and can overshoot by one such unit of work.
 
 `ftqec list-results --run runs/smoke` lists available candidates; `--all` includes more than the selected frontier. Export formats are `bundle`, `circuit-json`, `schedule-json`, and `stim`. Use a new output directory to preserve prior artifacts. A bundle carries circuit and schedule identities and available certification evidence. Verify a bundle with `ftqec verify-export PATH --require-certified`; omit the flag only when intentionally inspecting a non-positive bundle.
 

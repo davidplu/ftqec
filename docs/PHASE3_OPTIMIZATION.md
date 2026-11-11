@@ -21,10 +21,19 @@ two-block group-algebra representation, not just an unlabeled stabilizer list.
 Omit `--candidate-goal` for an anytime run. This driver sets no worker CPU or
 wall-clock timeout. Memory admission, the 512 MiB worker ceiling, proof-work
 limits, and explicit cancellation remain active. `--experiment-cpu` is optional:
-it checks accumulated worker plus controller CPU at window boundaries. A window
-can overshoot this measurement checkpoint; it is not a strict matched-compute
+it checks accumulated worker plus controller CPU at window or final-pair boundaries.
+A window or pair can overshoot this measurement checkpoint; it is not a strict matched-compute
 budget and does not terminate a running proof. Do not label two such runs a
 matched-compute comparison without inspecting their actual accounting.
+
+After a finite candidate goal, the driver also promotes previously unproved pairs
+on the screened **resource** frontier, retaining physical ties and lower-qubit
+alternatives. It simulates these candidates before certification. This final sweep
+adds proof work after proposal generation; an estimated resource frontier is never
+treated as a certified frontier. `--no-finalist-sweep` disables this step for
+controlled comparisons with the earlier policy. Pending final pairs are checkpointed
+before execution and resumed after memory-admission interruptions. Cancellation
+and an explicit experimental compute checkpoint still apply.
 
 ## Architecture proposals and scientific boundaries
 
