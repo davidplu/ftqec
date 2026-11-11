@@ -43,7 +43,8 @@ def verify(c, cert, work=50000000):
             if not witness or len(witness['faults']) != upper or not verify_witness(c, witness)['verified']:
                 return dict(verified=False, reason='physical witness')
         valid = (cert['status'] != 'CERTIFIED' or bound >= cert['target']) and (cert['status'] != 'INVALID' or upper is not None and upper < cert['target'])
-        return dict(verified=valid, lower_bound=bound, method='forward inventory/canonical branching/layered lifting')
+        lifting='affine parity lifting' if 'affine_lifting' in proof else 'layered lifting'
+        return dict(verified=valid, lower_bound=bound, method='forward inventory/canonical branching/'+lifting)
     except (Incomplete, KeyError, ValueError, TypeError) as exc:
         return dict(verified=False, reason=str(exc))
 

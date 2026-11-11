@@ -74,4 +74,53 @@ def test_disk_memory_campaign_reuses_completed_tasks(tmp_path):
     with PopulationStore(tmp_path/'population.sqlite',readonly=True) as db:assert list(db.packets())==before
     assert a['index']==b['index']==2 and ids
     export_result(tmp_path,ids[0],tmp_path/'bundle')
+    import json
+    packets=json.loads((tmp_path/'bundle/tasks.json').read_text())
+    assert {p['request']['tier'] for p in packets}=={'screen','simulation','certify'}
     assert verify_bundle(tmp_path/'bundle',200000)['positive_certificate_verified']
+
+
+def test_unproved_frontier_retains_ties_and_low_qubit_alternatives():
+    from ftqec.optimization.phase3 import unproved_resource_frontier
+    rows={}
+    for name,q,d,status in [('fast',12,10,None),('tie',12,10,None),('small',8,20,None),('dominated',12,20,None),('invalid',7,1,'INVALID')]:
+        for basis in ('X','Z'):
+            cid=name+basis
+            rows[cid]=dict(id=cid,pair=name,resources=dict(Q=q,D=d,QD=q*d,two_q_gates=10),circuit=dict(experiment=dict(memory_basis=basis)),screen=dict(status='SCREENED'))
+            if status:rows[cid]['certify']=dict(status=status)
+    class Store:
+        def summaries(self):
+            return [dict(id=k,screen=r['screen'],certify=dict(status=r.get('certify',{}).get('status'))) for k,r in rows.items()]
+        def get(self,key):return rows[key]
+    assert {tuple(pair) for pair in unproved_resource_frontier(Store())}=={('fastX','fastZ'),('tieX','tieZ'),('smallX','smallZ')}
+
+
+def test_finalist_sweep_recovers_after_memory_admission_stop(tmp_path,monkeypatch):
+    import ftqec.optimization.phase3 as engine
+    from ftqec.optimization.store import PopulationStore
+    real_batch=engine.batch;proof_calls=0
+    def interrupted(tasks,*args,**kwargs):
+        nonlocal proof_calls
+        if tasks and tasks[0].tier=='certify':
+            proof_calls+=1
+            if proof_calls==2:raise MemoryError('Injected admission interruption at final sweep')
+        return real_batch(tasks,*args,**kwargs)
+    def remaining(db):
+        pairs={}
+        for s in db.summaries():
+            row=db.get(s['id'])
+            if 'certify' not in row:pairs.setdefault(row['pair'],[]).append(row['id'])
+        return [ids for ids in pairs.values() if len(ids)==2]
+    monkeypatch.setattr(engine,'unproved_resource_frontier',remaining)
+    monkeypatch.setattr(engine,'batch',interrupted)
+    settings=dict(rounds=2,target=2,candidate_goal=2,window=2,promotions=1,shots=4,decoder='one_mechanism_lookup',work=200000)
+    stopped=engine.optimize(small(),tmp_path,**settings)
+    assert stopped['status']=='RESOURCE_SAFETY_INTERVENTION' and stopped['index']==2 and stopped['finalist_sweep_pending']
+    with PopulationStore(tmp_path/'population.sqlite',readonly=True) as db:
+        completed={p['answer']['task'] for p in db.packets()}
+    monkeypatch.setattr(engine,'batch',real_batch)
+    finished=engine.optimize(small(),tmp_path,**settings)
+    assert finished['status']=='REQUESTED_CANDIDATES_COMPLETED' and finished['finalist_sweep_complete_at']==2
+    assert 'finalist_sweep_pending' not in finished
+    with PopulationStore(tmp_path/'population.sqlite',readonly=True) as db:
+        assert completed <= {p['answer']['task'] for p in db.packets()}

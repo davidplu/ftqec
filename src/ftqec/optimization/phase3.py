@@ -13,6 +13,25 @@ from ..results.artifacts import save,digest,source_identity
 POLICIES=('random','structured','witness','multifidelity','hybrid','costaware','costhybrid')
 
 
+def unproved_resource_frontier(db):
+    """Choose all unpromoted paired ties on the screened resource frontier.
+
+    This selects proof work only. An uncertified resource point never enters
+    the certified output frontier merely by dominating another estimate.
+    """
+    pairs={}
+    for summary in db.summaries():
+        if summary['certify']['status']=='INVALID' or summary['screen']['status']=='FAULT_INVALID':continue
+        row=db.get(summary['id']);pairs.setdefault(row['pair'],[]).append(row)
+    aggregate=[];lookup={}
+    for key,rows in pairs.items():
+        if len(rows)!=2 or {r['circuit']['experiment']['memory_basis'] for r in rows}!={'X','Z'}:continue
+        lookup[key]=rows
+        aggregate.append(dict(id=key,resources={k:max(r['resources'][k] for r in rows) for k in ('Q','D','QD','two_q_gates')}))
+    return [[r['id'] for r in lookup[item['id']]] for item in sorted(skyline(aggregate),key=lambda r:(r['resources']['QD'],r['id']))
+            if all('certify' not in r for r in lookup[item['id']])]
+
+
 def proposal(code,index,seed,policy,parents=()):
     if policy not in POLICIES:raise ValueError('Unsupported Phase 3 policy')
     rng=random.Random(seed+index*1000003);masks=crossing_masks(code)
@@ -64,11 +83,11 @@ def proposal(code,index,seed,policy,parents=()):
 
 def optimize(data,output,rounds=6,target=6,candidate_goal=None,workers=1,seed=1,
              policy='hybrid',proof_method='auto',work=50000000,window=10,promotions=1,
-             shots=32,decoder='bposd',noise=.001,experiment_cpu=None):
+             shots=32,decoder='bposd',noise=.001,experiment_cpu=None,finalist_sweep=True):
     if candidate_goal is not None and candidate_goal<1:raise ValueError('Positive candidate goal')
     if min(rounds,target,workers,window,promotions,shots,work)<1:raise ValueError('Positive search settings')
     code=parse(data);root=Path(output);root.mkdir(parents=True,exist_ok=True)
-    source=source_identity();config=dict(rounds=rounds,target=target,seed=seed,policy=policy,proof_method=proof_method,work=work,window=window,promotions=promotions,shots=shots,decoder=decoder,noise=noise)
+    source=source_identity();config=dict(rounds=rounds,target=target,seed=seed,policy=policy,proof_method=proof_method,work=work,window=window,promotions=promotions,shots=shots,decoder=decoder,noise=noise,finalist_sweep=finalist_sweep)
     identity=digest(dict(code=data,source=source,config=config))
     start=time.perf_counter();cpu=time.process_time()
     with RunLock(root/'run.lock'),PopulationStore(root/'population.sqlite',identity) as db:
@@ -162,7 +181,29 @@ def optimize(data,output,rounds=6,target=6,candidate_goal=None,workers=1,seed=1,
                         state.setdefault('certified_family_costs',{}).setdefault(row['genome']['family'],[]).append(cert['portfolio_selection']['cpu'])
                 state['index']+=count;state.pop('pending',None);state['status']='RUNNING';persist();publish()
                 db.event('compute_checkpoint',dict(proposals=state['index'],worker_cpu=db.worker_cpu(),controller_cpu=time.process_time()-cpu))
-            else:state['status']='REQUESTED_CANDIDATES_COMPLETED'
+            else:
+                cancelled=False;checkpointed=False
+                if finalist_sweep and state.get('finalist_sweep_complete_at')!=state['index']:
+                    pending=state.get('finalist_sweep_pending',[])
+                    seen={tuple(sorted(ids)) for ids in pending}
+                    pending+= [ids for ids in unproved_resource_frontier(db) if tuple(sorted(ids)) not in seen]
+                    state['finalist_sweep_pending']=pending;persist()
+                    while pending:
+                        if (root/'cancel.json').exists():cancelled=True;break
+                        spent=db.worker_cpu()+sum(s['cpu'] for s in state['sessions'])+time.process_time()-cpu
+                        if experiment_cpu is not None and spent>=experiment_cpu:checkpointed=True;break
+                        rows=[db.get(cid) for cid in pending[0]]
+                        simulated=[r for r in rows if 'simulation' not in r]
+                        for row,result in zip(simulated,evaluate([(r['id'],r['circuit']) for r in simulated],'simulation')):
+                            row['simulation']=result;db.put(row)
+                        for row,result in zip(rows,evaluate([(r['id'],r['circuit']) for r in rows],'certify')):
+                            row['certify']=result;db.put(row)
+                        if (root/'cancel.json').exists():cancelled=True;persist();break
+                        db.event('finalist_promotion',dict(circuits=pending[0],criterion='screened_resource_frontier'))
+                        pending.pop(0);persist();publish()
+                    if not pending:
+                        state['finalist_sweep_complete_at']=state['index'];state.pop('finalist_sweep_pending',None)
+                state['status']='CANCELLED' if cancelled else 'EXPERIMENT_CHECKPOINT_REACHED' if checkpointed else 'REQUESTED_CANDIDATES_COMPLETED'
         except MemoryError as exc:state.update(status='RESOURCE_SAFETY_INTERVENTION',reason=str(exc))
         finally:
             state['sessions'].append(dict(cpu=time.process_time()-cpu,wall=time.perf_counter()-start));persist();publish()

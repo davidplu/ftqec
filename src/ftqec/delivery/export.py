@@ -110,7 +110,8 @@ def resolve(run, circuit_id):
     if state.get('schema')=='sqlite-population-1':
         from ..optimization.store import PopulationStore
         with PopulationStore(path.parent/state['population_db'],readonly=True) as db:
-            state=db.get_meta('state');return state,db.get(circuit_id)
+            metadata=dict(db.get_meta('state'),schema=state['schema'],population_db=state['population_db'])
+            return metadata,db.get(circuit_id)
     matches = [r for r in state['rows'] if r['id'] == circuit_id]
     if len(matches) != 1:
         raise ValueError('Circuit ID must identify exactly one optimizer row in --run')

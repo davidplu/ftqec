@@ -11,6 +11,7 @@ def main():
     o.add_argument("--decoder",choices=["auto","matching","one_mechanism_lookup","bposd"],default="auto");o.add_argument("--proof-work",type=int,default=20000000);o.add_argument("--convergence-generations",type=int,default=8)
     o.add_argument("--memory-rounds",type=int,help="Evaluate supplied 2BGA architecture populations in both physical memory sectors")
     o.add_argument('--phase3',action='store_true',help='Use disk-backed paired-memory architecture discovery')
+    o.add_argument('--no-finalist-sweep',action='store_true',help='Disable the finite paired-memory run final resource-frontier proof sweep')
     o.add_argument('--experiment-cpu',type=float,help='Finite experiment checkpoint in combined controller and worker CPU seconds; no task timeout')
     o.add_argument("--memory-shots",type=int,default=128,help="Initial shots per memory sector; selected finalists receive a separate 4x batch")
     o.add_argument("--memory-noise",type=float,default=.001,help="Operation-local error probability for physical memory experiments")
@@ -42,7 +43,7 @@ def main():
         if a.phase3:
             if a.explicit_idles:raise ValueError('Phase 3 currently preserves the baseline explicit-operation noise model without added idles')
             from ..optimization.phase3 import optimize as phase3
-            state=phase3(json.loads(a.code.read_text()),a.output,rounds=a.memory_rounds,target=a.target,candidate_goal=a.candidate_goal,workers=a.workers,seed=a.seed,policy=a.strategy,proof_method=a.proof_method,work=a.proof_work,window=a.window,promotions=a.promotion,shots=a.memory_shots,decoder=a.decoder,noise=a.memory_noise,experiment_cpu=a.experiment_cpu)
+            state=phase3(json.loads(a.code.read_text()),a.output,rounds=a.memory_rounds,target=a.target,candidate_goal=a.candidate_goal,workers=a.workers,seed=a.seed,policy=a.strategy,proof_method=a.proof_method,work=a.proof_work,window=a.window,promotions=a.promotion,shots=a.memory_shots,decoder=a.decoder,noise=a.memory_noise,experiment_cpu=a.experiment_cpu,finalist_sweep=not a.no_finalist_sweep)
             print(json.dumps(dict(status=state['status'],proposals=state['index'],output=str(a.output))));return
         from ..optimization.repeated import optimize as optimize_memory
         state=optimize_memory(json.loads(a.code.read_text()),a.output,a.memory_rounds,a.target,population=a.population,generations=a.generations,workers=a.workers,seed=a.seed,work=a.proof_work,no_time_limits=a.no_time_limits,idles=a.explicit_idles,decoder=a.decoder,proof_method=a.proof_method,shots=a.memory_shots,p=a.memory_noise,strategy=a.strategy,promotion=a.promotion)
