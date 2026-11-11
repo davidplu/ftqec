@@ -66,12 +66,15 @@ def legacy_verify(c,cert,work=200000):
     return dict(verified=True,examined=count,method="forward_effects_ungrouped_exhaustion")
 
 def certify(c,target=3,work=200000,directory=None,method="auto"):
-    if method == 'time_collapse':
+    if method == 'auto':
+        from .portfolio import certify as backend
+        high = lambda c, target, work, directory, method: backend(c, target, work, directory)
+    elif method == 'time_collapse':
         from .relaxation_portfolio import certify as backend
         high = lambda c, target, work, directory, method: backend(c, target, work, directory)
     else:
         from .high_distance import certify as high
-    out=high(c,target,work,directory,method)
+    out=high(c,target,work,directory,'auto' if method=='auto_legacy' else method)
     out["result"]=dict(status="UPPER_BOUND" if out["status"]=="INVALID" else "LOWER_BOUND" if out.get("lower_bound",1)>1 else "UNRESOLVED",lower_bound=out.get("lower_bound",1),upper_bound=out.get("upper_bound"),excluded_through=out.get("lower_bound",1)-1,witness=out.get("witness"),reason=out.get("unresolved"),requested_weight=target-1)
     return out
 

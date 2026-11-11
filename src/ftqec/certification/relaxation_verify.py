@@ -57,7 +57,11 @@ def verify(c, directory, work=50000000):
     if result['lower_bound'] > lower:
         if not check['minima'] or result['lower_bound'] != lower+1:
             raise ValueError('Unsupported lifting bound')
-        exclusion = exclude_lifts(ir, projection, check['minima'], work)
+        if result.get('lifting_method') == 'affine_parity':
+            from .affine_lifting import verify as affine_verify
+            exclusion = dict(excluded=affine_verify(ir, projection, check['minima'], read('affine-lifting.json')))
+        else:
+            exclusion = exclude_lifts(ir, projection, check['minima'], work)
         if not exclusion['excluded']:
             raise ValueError('A projected minimizer has a full preimage')
         lower += 1

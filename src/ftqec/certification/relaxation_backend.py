@@ -5,7 +5,7 @@ from .relaxation import enumerate_minima, canonical_minima, lift_minima, Incompl
 from ..results.artifacts import save, digest, source_identity
 
 
-def run(c, target, directory, work=50000000, sector=False):
+def run(c, target, directory, work=50000000, sector=False, prepared=None):
     root = Path(directory)
     result = dict(status='UNKNOWN', target=target, lower_bound=1, upper_bound=None,
                   source=source_identity(), circuit=digest(c.to_dict()),
@@ -15,7 +15,7 @@ def run(c, target, directory, work=50000000, sector=False):
     def checkpoint(stage):
         result['stage'] = stage; save(root/'result.json', result)
     try:
-        ir = physical.build(c); save(root/'inventory.json', ir)
+        ir = prepared if prepared is not None else physical.build(c); save(root/'inventory.json', ir)
         physical.validate(c, ir, independent=True)
         result['inventory_verified'] = True; result['inventory_identity'] = ir['identity']
         result['alternatives'] = len(ir['alternatives']); result['mechanisms'] = len(ir['columns'])
@@ -24,7 +24,10 @@ def run(c, target, directory, work=50000000, sector=False):
         reduced = physical.project(ir, groups); save(root/'projection.json', reduced)
         result['projected_mechanisms'] = len(reduced['columns']); result['projected_detectors'] = len(groups)
         checkpoint('inventory_and_projection')
-        answer = enumerate_minima(reduced['columns'], min(5, target), work)
+        def progress(bound):
+            result['producer_lower_bound']=bound
+            checkpoint('projected_prefix_complete_not_yet_independently_verified')
+        answer = enumerate_minima(reduced['columns'], min(5, target), work, on_progress=progress)
         save(root/'projected-enumeration.json', answer)
         checkpoint('projected_enumeration_complete')
         independent = canonical_minima(reduced['columns'], min(answer['lower_bound'], 5, target), work)
@@ -34,7 +37,17 @@ def run(c, target, directory, work=50000000, sector=False):
         result['lower_bound'] = answer['lower_bound']
         result['independent'] = dict(verified=True, method='forward physical inventory and canonical residual branching')
         checkpoint('projected_minimum_verified')
-        if answer['minima']:
+        from .affine_lifting import prove as affine_prove, verify as affine_verify
+        affine = affine_prove(ir, reduced, answer['minima']) if answer['minima'] else None
+        if affine is not None:
+            save(root/'affine-lifting.json', affine)
+        if affine is not None and affine['complete']:
+            if not affine_verify(ir, reduced, independent['minima'], affine):
+                raise ValueError('Independent affine parity verification failed')
+            result['lower_bound'] += 1
+            result['independent']['lifting_verified'] = True
+            result['lifting_method'] = 'affine_parity'
+        elif answer['minima']:
             lifted = lift_minima(ir, reduced, answer['minima'], work_limit=work)
             save(root/'lifting.json', lifted)
             if lifted['witness'] is not None:
@@ -63,5 +76,16 @@ def run(c, target, directory, work=50000000, sector=False):
         checkpoint('complete')
     except Incomplete as exc:
         result['reason'] = str(exc)
+        # Preserve a cheaper verified prefix when the full obligation censors.
+        prefix=min(4,result.get('producer_lower_bound',1))
+        if prefix>result['lower_bound']:
+            try:
+                prefix_check=canonical_minima(reduced['columns'],prefix-1,work)
+                if prefix_check['lower_bound']>=prefix:
+                    result['lower_bound']=prefix
+                    result['independent']=dict(verified=True,method='forward inventory and canonical prefix exclusion')
+                    save(root/'independent-prefix.json',prefix_check)
+            except Incomplete:pass
+        result['unresolved_weights']=list(range(result['lower_bound'],target))
         checkpoint('incomplete')
     return result

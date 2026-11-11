@@ -10,6 +10,8 @@ def main():
     o=sub.add_parser("optimize");o.add_argument("code",type=Path);o.add_argument("--output",type=Path,default=Path("runs/local"));o.add_argument("--generations",type=int);o.add_argument("--population",type=int,default=24);o.add_argument("--workers",type=int,default=1);o.add_argument("--seed",type=int,default=0);o.add_argument("--target","--target-distance",type=int,default=3);o.add_argument("--strategy",choices=["random","structured","witness","multifidelity","hybrid","costaware","costhybrid"],default="hybrid")
     o.add_argument("--decoder",choices=["auto","matching","one_mechanism_lookup","bposd"],default="auto");o.add_argument("--proof-work",type=int,default=20000000);o.add_argument("--convergence-generations",type=int,default=8)
     o.add_argument("--memory-rounds",type=int,help="Evaluate supplied 2BGA architecture populations in both physical memory sectors")
+    o.add_argument('--phase3',action='store_true',help='Use disk-backed paired-memory architecture discovery')
+    o.add_argument('--experiment-cpu',type=float,help='Finite experiment checkpoint in combined controller and worker CPU seconds; no task timeout')
     o.add_argument("--memory-shots",type=int,default=128,help="Initial shots per memory sector; selected finalists receive a separate 4x batch")
     o.add_argument("--memory-noise",type=float,default=.001,help="Operation-local error probability for physical memory experiments")
     o.add_argument("--explicit-idles",action="store_true",help="Include active storage locations in repeated memory")
@@ -17,7 +19,7 @@ def main():
     o.add_argument("--no-time-limits",action="store_true",help="Disable worker CPU and elapsed-time cutoffs; retain memory safeguards and cancellation")
     o.add_argument("--storage",choices=("auto","json","sqlite"),default="auto");o.add_argument("--window",type=int,default=32);o.add_argument("--promotion",type=int,default=8);o.add_argument("--candidate-goal",type=int)
     cert=sub.add_parser("certify");cert.add_argument("circuit",type=Path);cert.add_argument("--target",type=int,default=9);cert.add_argument("--proof-work",type=int,default=20000000);cert.add_argument("--output",type=Path,required=True)
-    for parser in (o,cert):parser.add_argument("--proof-method",choices=("auto","graph","dp","mitm","triples","sat","decomposition","decomposition_legacy","decomposition_span","time_collapse"),default="auto")
+    for parser in (o,cert):parser.add_argument("--proof-method",choices=("auto","graph","dp","mitm","triples","sat","decomposition","decomposition_legacy","decomposition_span","time_collapse","auto_legacy"),default="auto")
     w=sub.add_parser("worker");w.add_argument("task",type=Path);w.add_argument("output",type=Path)
     c=sub.add_parser("cancel");c.add_argument("output",type=Path)
     e=sub.add_parser("export");e.add_argument("circuit_id");e.add_argument("--run",type=Path,default=Path("runs/local"));e.add_argument("--format",choices=("bundle","stim","schedule-json","circuit-json"),default="bundle");e.add_argument("--output",type=Path,required=True);e.add_argument("--noise-p",type=float)
@@ -37,6 +39,11 @@ def main():
         c=Circuit.from_dict(json.loads(a.circuit.read_text()));c=memory(c,a.rounds,a.memory_basis,a.explicit_idles) if a.memory_basis else repeat(c,a.rounds)
         check(c);save(a.output,c.to_dict());print(json.dumps(dict(output=str(a.output),rounds=a.rounds,boundary_model=c.boundary_model)));return
     if a.command=='optimize' and a.memory_rounds is not None:
+        if a.phase3:
+            if a.explicit_idles:raise ValueError('Phase 3 currently preserves the baseline explicit-operation noise model without added idles')
+            from ..optimization.phase3 import optimize as phase3
+            state=phase3(json.loads(a.code.read_text()),a.output,rounds=a.memory_rounds,target=a.target,candidate_goal=a.candidate_goal,workers=a.workers,seed=a.seed,policy=a.strategy,proof_method=a.proof_method,work=a.proof_work,window=a.window,promotions=a.promotion,shots=a.memory_shots,decoder=a.decoder,noise=a.memory_noise,experiment_cpu=a.experiment_cpu)
+            print(json.dumps(dict(status=state['status'],proposals=state['index'],output=str(a.output))));return
         from ..optimization.repeated import optimize as optimize_memory
         state=optimize_memory(json.loads(a.code.read_text()),a.output,a.memory_rounds,a.target,population=a.population,generations=a.generations,workers=a.workers,seed=a.seed,work=a.proof_work,no_time_limits=a.no_time_limits,idles=a.explicit_idles,decoder=a.decoder,proof_method=a.proof_method,shots=a.memory_shots,p=a.memory_noise,strategy=a.strategy,promotion=a.promotion)
         print(json.dumps(dict(status=state['status'],circuits=len(state['rows']),output=str(a.output))));return

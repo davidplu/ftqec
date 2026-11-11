@@ -28,7 +28,11 @@ def verify(c, cert, work=50000000):
                  if bound > 1 else dict(lower_bound=1, minima=[]))
         lower = check['lower_bound']
         if bound > lower:
-            if not check['minima'] or bound != lower+1 or not exclude_lifts(ir, projected, check['minima'], work)['excluded']:
+            from .affine_lifting import verify as affine_verify
+            excluded = (affine_verify(ir, projected, check['minima'], proof['affine_lifting'])
+                        if 'affine_lifting' in proof else
+                        exclude_lifts(ir, projected, check['minima'], work)['excluded'])
+            if not check['minima'] or bound != lower+1 or not excluded:
                 return dict(verified=False, reason='lifting')
             lower += 1
         if bound > lower:
@@ -44,7 +48,7 @@ def verify(c, cert, work=50000000):
         return dict(verified=False, reason=str(exc))
 
 
-def certify(c, target, work, directory=None):
+def certify(c, target, work, directory=None, prepared=None):
     from .exact import contract
     from .relaxation_backend import run
     from ..screening.structural import check
@@ -53,14 +57,16 @@ def certify(c, target, work, directory=None):
         raise ValueError('Positive target required')
     if directory is None:
         with tempfile.TemporaryDirectory() as root:
-            return certify(c, target, work, root)
+            return certify(c, target, work, root, prepared)
     root = Path(directory)
-    raw = run(c, target, root, work, sector=c.boundary_model == 'repeated_noisy_memory')
+    raw = run(c, target, root, work, sector=c.boundary_model == 'repeated_noisy_memory', prepared=prepared)
     model, scope = contract(c)
     cert = dict(raw, fault_model=model, scope=scope, requested_target=target)
     ir = json.loads((root/'inventory.json').read_text())
     projection = json.loads((root/'projection.json').read_text())
     cert['proof'] = dict(method=VERSION, groups=projection['groups'], inventory_hash=ir['inventory_hash'], inventory_count=len(ir['alternatives']))
+    if raw.get('lifting_method') == 'affine_parity':
+        cert['proof']['affine_lifting'] = json.loads((root/'affine-lifting.json').read_text())
     if cert.get('upper_bound') is not None:
         witness = json.loads((root/'witness.json').read_text())
         cert['witness'] = dict(witness, fault_count=witness['weight'])

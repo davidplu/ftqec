@@ -7,6 +7,9 @@ from ..screening.structural import check
 def architecture(code,genome,seed=0):
     """Use the existing generic gadget/scheduling vocabulary on full CSS checks."""
     family=genome.get('family','group_term')
+    if family=='group_pool':
+        from .group_search import pooled
+        return pooled(code,genome)
     if family=='group_term':return term_schedule(code,seed,order=genome['order'])
     from .population import Genome,compile
     from ..codes.input import CodeInput

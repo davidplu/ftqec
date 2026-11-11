@@ -4,6 +4,7 @@ Start with [installation](INSTALLATION.md), then [the user guide](USER_GUIDE.md)
 
 ## Implementation topics
 
+- [Paired repeated-memory discovery](PHASE3_OPTIMIZATION.md): experimental code-only 2BGA search, automatic certification, source-bound checkpoints, and current recovery limitations.
 - [Architecture generation](ARCHITECTURE_GENERATION.md), [distance-aware synthesis](DISTANCE_AWARE_SYNTHESIS.md), and [optimization algorithm](OPTIMIZATION_ALGORITHM.md).
 - [Large populations](LARGE_SCALE_OPTIMIZATION.md), [population storage](POPULATION_STORAGE.md), and [adaptive evaluation](ADAPTIVE_EVALUATION.md).
 - [Exact proof methods](EXACT_PROOF_METHODS.md), [certification contract](CERTIFICATION_CONTRACT.md), and [decomposition](DECOMPOSITION_CERTIFICATION.md).

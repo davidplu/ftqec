@@ -12,7 +12,7 @@ class Incomplete(RuntimeError):
     pass
 
 
-def enumerate_minima(columns, max_weight=5, work_limit=50000000):
+def enumerate_minima(columns, max_weight=5, work_limit=50000000, on_progress=None):
     if not 1 <= max_weight <= 5:
         raise ValueError('This enumerator supports weights one through five')
     h = [x['detectors'] for x in columns]; l = [x['logical'] for x in columns]
@@ -34,6 +34,7 @@ def enumerate_minima(columns, max_weight=5, work_limit=50000000):
         solutions = [list(s) for s in combinations(range(n), w) if harmful(s)]
         if solutions:
             return dict(lower_bound=w, minima=solutions, work=work)
+        if on_progress:on_progress(w+1)
     pairs = defaultdict(list)
     singles = defaultdict(list)
     for i in range(n):
@@ -63,10 +64,11 @@ def enumerate_minima(columns, max_weight=5, work_limit=50000000):
                         found.add((a, b, c, x, y))
         if found:
             return dict(lower_bound=w, minima=[list(x) for x in sorted(found)], work=work)
+        if on_progress:on_progress(w+1)
     return dict(lower_bound=max_weight+1, minima=[], work=work)
 
 
-def canonical_minima(columns, threshold, work_limit=50000000):
+def canonical_minima_sets(columns, threshold, work_limit=50000000):
     """Independent Algorithm-2-style checker, without pair/triple tables."""
     incidence = defaultdict(set)
     for j, col in enumerate(columns):
@@ -103,6 +105,43 @@ def canonical_minima(columns, threshold, work_limit=50000000):
     minimum = min((len(x) for x in found), default=threshold+1)
     return dict(lower_bound=minimum,
                 minima=[list(x) for x in sorted(found) if len(x) == minimum], work=nodes)
+
+
+def canonical_minima(columns, threshold, work_limit=50000000):
+    """Same exhaustive partition as the set oracle, using native integer sets."""
+    incidence = defaultdict(int)
+    for j, col in enumerate(columns):
+        bits = col['detectors']
+        while bits:
+            bit = bits & -bits; incidence[bit] |= 1 << j; bits ^= bit
+    found = set(); nodes = 0
+    def visit(chosen, available, syndrome, logical):
+        nonlocal nodes
+        nodes += 1
+        if nodes > work_limit:
+            raise Incomplete('Independent branch-check work limit')
+        if syndrome == 0:
+            if logical:found.add(tuple(sorted(chosen)))
+            return
+        if len(chosen) == threshold:return
+        bits = syndrome; candidates = 0; size = len(columns)+1
+        while bits:
+            bit = bits & -bits; bits ^= bit
+            row = incidence[bit] & available
+            if not row:return
+            count = row.bit_count()
+            if count < size:candidates = row; size = count
+        remaining = available
+        while candidates:
+            bit = candidates & -candidates; candidates ^= bit; remaining &= ~bit
+            j = bit.bit_length()-1; col = columns[j]
+            visit(chosen+(j,), remaining, syndrome ^ col['detectors'], logical ^ col['logical'])
+    available = (1 << len(columns))-1
+    for j, col in enumerate(columns):
+        available &= ~(1 << j)
+        visit((j,), available, col['detectors'], col['logical'])
+    minimum = min((len(x) for x in found), default=threshold+1)
+    return dict(lower_bound=minimum, minima=[list(x) for x in sorted(found) if len(x)==minimum], work=nodes)
 
 
 def lift_minima(original, projected, minima, reverse=False, work_limit=50000000):
