@@ -35,6 +35,18 @@ Evidence: `results/phase4/epoch-20261112-v3/fixed-pool/seed-74011/{pool,random}/
 
 ## Remaining scientific obligations
 
+### Post-hoc selection diagnosis
+
+The frozen seed-74011 ranking placed the certified Q=84 pair first in random order, 24th in direct order, 33rd in frontier order, and outside the legacy selection. Its sole raw-resource dominator was pair `32b4577c6e6fa981a93065ba5d763fb08d6956cdd4243a347ea6318e58302d87`, with Q=84, worse-sector D=286, QD=24,024, and 2,160 two-qubit gates. Both sectors of that apparently cheaper pair were subsequently independently verified INVALID by the frontier arm.
+
+This explains a specific selection mechanism: static resource dominance by a physically invalid candidate postponed a valid lower-qubit alternative. The fixed-pool ordering is not refreshed after verification. The valid alternative remains eligible later in the queue; it is not permanently rejected. Refreshing after a verified invalid result is a hypothesis for a separate prospective comparison, not an improvement already tested here. No ranking or budget was changed after observing this case.
+
+The frontier arm independently rediscovered a Q=144, worse-sector D=64, QD=9,216 pair before this diagnosis. Its later long proof concerned an unproved Q=78, D=12,964, QD=1,011,192, 6,912-two-qubit-gate alternative. These raw resources do not establish fault tolerance. They illustrate why retaining low-qubit alternatives can incur substantial proof cost even outside the frozen hypervolume reference box.
+
+Raw records: `seed-74011-rank-diagnostic.json`, `seed-74011-resource-diagnostic.json`, and `seed-74011-dominance-outcome-diagnostic.json` under the current epoch. These diagnostics are separate from policy decisions and do not supply outcomes to another policy.
+
+### Outstanding experiments
+
 1. Complete all five policies on all five fixed-pool seeds and analyze the prespecified frontier-versus-legacy contrast.
 2. Execute the separately frozen adaptive comparison, preserving the actual end-of-population sweep timing.
 3. Execute the 1,000-proposal scale stage. Cross-population claims require matched total CPU, including different construction costs.
