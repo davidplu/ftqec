@@ -12,6 +12,7 @@ def compute_receipt(run):
         tiers={name:dict(tasks=n,cpu=cpu,summed_wall=wall,peak_rss=peak) for name,n,cpu,wall,peak in db.db.execute('''
             SELECT t.tier,count(*),sum(e.cpu),sum(e.wall),max(e.peak) FROM execution e JOIN tasks t ON t.id=e.id GROUP BY t.tier''')}
     return dict(worker_cpu=workers,controller_cpu=sum(r['whole_controller_cpu'] for r in receipts) if receipts else None,
+        external_measurement_driver_cpu=sum(r['supervisor_cpu'] for r in receipts) if receipts else None,
         controller_elapsed_wall=sum(r['wall'] for r in receipts) if receipts else None,
         controller_sampled_peak_rss=max((r['sampled_peak_rss'] for r in receipts),default=None),
         worker_sampled_peak_rss=max((r['peak_rss'] for r in tiers.values()),default=0),tiers=tiers,
@@ -32,9 +33,19 @@ def sign_randomization(differences):
 def analyze(epoch):
     epoch=Path(epoch);protocols=list(epoch.glob('protocol-A-v*.json'))
     if len(protocols)!=1:raise ValueError('Exactly one frozen fixed-pool protocol required per epoch')
-    spec=json.loads(protocols[0].read_text());records=[];missing=[];compute=[]
+    spec=json.loads(protocols[0].read_text());records=[];missing=[];compute=[];preparation=[]
+    if digest({k:v for k,v in spec.items() if k!='identity'})!=spec['identity']:
+        raise ValueError('Protocol integrity mismatch')
     for seed in spec['generator_seeds']:
         block=epoch/'fixed-pool'/f'seed-{seed}'
+        pool_path=block/'pool/pool-accounted.json'
+        if pool_path.exists():
+            pool=json.loads(pool_path.read_text())
+            if digest({k:v for k,v in pool.items() if k!='hash'})!=pool['hash'] or pool['protocol']!=spec['identity']:
+                raise ValueError('Pool integrity or protocol mismatch')
+            preparation.append(dict(seed=seed,pool_hash=pool['hash'],shared_cpu=pool['shared_cpu'],
+                scope='Charged to each policy for comparison; count once in actual campaign execution cost',
+                **compute_receipt(pool_path.parent)))
         available={}
         for policy in spec['policies']:
             path=block/policy/'comparison.json'
@@ -60,11 +71,12 @@ def analyze(epoch):
                     best={k:min((p['resources'][k] for p in metrics),default=None) for k in ('Q','D','QD','two_q_gates')}))
     primary=[]
     for seed in spec['generator_seeds']:
-        rows={r['policy']:r for r in records if r['seed']==seed and r['promotion_cpu_checkpoint']==1000 and r['valid_comparison']}
+        rows={r['policy']:r for r in records if r['seed']==seed and r['promotion_cpu_checkpoint']==spec['promotion_cpu_checkpoints'][-1] and r['valid_comparison']}
         if 'frontier' in rows and 'legacy' in rows:
             primary.append(dict(seed=seed,difference=rows['frontier']['hypervolume']-rows['legacy']['hypervolume']))
     diffs=[p['difference'] for p in primary]
-    result=dict(protocol=spec['identity'],records=records,compute=compute,missing=missing,primary_contrast=primary,
+    result=dict(protocol=spec['identity'],records=records,compute=compute,preparation=preparation,missing=missing,primary_contrast=primary,
+        primary_promotion_cpu_checkpoint=spec['promotion_cpu_checkpoints'][-1],
         primary_complete=len(primary)==len(spec['generator_seeds']),
         median_difference=statistics.median(diffs) if diffs else None,
         wins=sum(x>0 for x in diffs),ties=sum(x==0 for x in diffs),losses=sum(x<0 for x in diffs),
