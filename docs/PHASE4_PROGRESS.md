@@ -55,6 +55,10 @@ The ten-second, ten-samples-per-second nonblocking observation retained 99 sampl
 
 Retained evidence: `long-proof-stack-001.txt`, `long-proof-profile-001.txt`, its log, and `long-proof-profile-001-provenance.json`. The profiler was installed separately from the pinned research environment. See the [profiler's documentation](https://github.com/benfred/py-spy) for its external sampling mechanism and nonblocking limitations. Sampling overhead was not independently measured; the shared-laptop and diagnostic-instrumentation qualification remains part of the timing evidence.
 
+The Q=78 X-sector attempt subsequently returned UNKNOWN/MEMORY_LIMIT after 1,751.34375 worker CPU seconds and 1,761.388229599921 elapsed worker seconds. `Q78-X-censored-certification.json` retains the completed task receipt. No positive proof or new lower bound is adopted from that terminated attempt. The earlier profile identifies a sampled preprocessing hotspot; it does not identify the precise allocation that eventually crossed the process-memory safeguard. The admitted Z-sector attempt was still running when this update was written.
+
+The larger reliability study has a prepared catalogue of the eight preserved control sectors in `results/phase4/planned-reliability/controls.json`. Their original proof sources and lower/upper verification receipts remain attached. This is input preparation only: final discovery selection and the complete 1024-shot sampling manifest are not yet frozen, and no larger reliability batches have run.
+
 ### Outstanding experiments
 
 1. Complete all five policies on all five fixed-pool seeds and analyze the prespecified frontier-versus-legacy contrast.
