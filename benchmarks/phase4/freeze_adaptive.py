@@ -1,12 +1,17 @@
 """Freeze adaptive, generation, and transfer settings before their outcomes."""
-import datetime,hashlib,json,shutil,subprocess
+import argparse,datetime,hashlib,json,os,shutil,subprocess
 from pathlib import Path
 from ftqec.results.artifacts import save,digest,source_identity
 from ftqec.execution.runtime import runtime_identity
 
-root=Path(__file__).resolve().parents[2];epoch=root/'results/phase4/epoch-20261111-adaptive'
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--fixed-epoch',required=True);parser.add_argument('--output',required=True)
+args=parser.parse_args()
+root=Path(__file__).resolve().parents[2];epoch=Path(args.output).resolve();fixed=Path(args.fixed_epoch).resolve()
 if (epoch/'plan.json').exists():raise SystemExit('Adaptive plan already frozen')
-base=json.loads((root/'results/phase4/epoch-20261111-v2/protocol-A-v2.json').read_text())
+protocols=list(fixed.glob('protocol-A-v*.json'))
+if len(protocols)!=1:raise ValueError('One fixed-pool protocol required')
+base=json.loads(protocols[0].read_text())
 assert source_identity()==base['source'],'Freeze a separate source amendment before changing algorithms'
 snapshot=epoch/'frozen/src';snapshot.mkdir(parents=True,exist_ok=True)
 shutil.copytree(root/'src/ftqec',snapshot/'ftqec',ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
@@ -17,7 +22,7 @@ for name in ('2bga_D6_n24_k2_d4','2bga_D9_n36_k8_d4'):
     cases.append((name,json.loads((inputs/(name+'.json')).read_text()),4,base['policies'],['hybrid']))
 plan=dict(source=base['source'],runtime=runtime_identity(),git_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),
           created_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),seeds=base['generator_seeds'],
-          source_snapshot='frozen/src',prerequisite_fixed_pool=str((root/'results/phase4/epoch-20261111-v2').resolve()),
+          source_snapshot='frozen/src',prerequisite_fixed_pool=os.path.relpath(fixed,epoch),
           prerequisite_protocol=base['identity'],driver_sha256=hashlib.sha256((root/'benchmarks/phase4/run_adaptive.py').read_bytes()).hexdigest(),cases=[],
           qualification='Generation comparisons reuse the prospectively identical main72/hybrid/frontier control, with its measured costs; no free proof tasks are transferred.',
           interpretation='An end-only frontier sweep may not activate before a finite compute checkpoint. Report its actual activation, including no activation, rather than substituting sweep-first selection.')

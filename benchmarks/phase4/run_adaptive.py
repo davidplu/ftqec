@@ -34,7 +34,7 @@ def main():
     if digest({k:v for k,v in plan.items() if k!='identity'})!=plan['identity']:raise SystemExit('Plan hash mismatch')
     if hashlib.sha256(Path(__file__).read_bytes()).hexdigest()!=plan['driver_sha256']:raise SystemExit('Frozen driver mismatch')
     # No implicit wait or skipped prerequisite: the main controller decides when to launch.
-    fixed=Path(plan['prerequisite_fixed_pool'])
+    fixed=(epoch/plan['prerequisite_fixed_pool']).resolve()
     for seed in plan['seeds']:
         for policy in ('direct','random','resource','legacy','frontier'):
             f=fixed/'fixed-pool'/f'seed-{seed}'/policy/'comparison.json'
