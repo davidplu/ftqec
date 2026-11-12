@@ -45,6 +45,16 @@ The frontier arm independently rediscovered a Q=144, worse-sector D=64, QD=9,216
 
 Raw records: `seed-74011-rank-diagnostic.json`, `seed-74011-resource-diagnostic.json`, and `seed-74011-dominance-outcome-diagnostic.json` under the current epoch. These diagnostics are separate from policy decisions and do not supply outcomes to another policy.
 
+The invalid dominator's retained physical witnesses have weight four in X and five in Z; both were independently replayed. `seed-74011-dominance-negative-evidence.json` contains the original certificates and verification receipts. Extracting these records is not an additional proof execution.
+
+### Certification-cost diagnosis
+
+A short profile of the long Q=78 proof found the worker in `span_decomposition.decompose`, called by the quotient-decomposition backend. The source repeatedly scores every remaining location to select the next elimination step, rebuilding detector-support sets. For a component with m locations, that loop performs m(m+1)/2 score evaluations; this is preprocessing before the dynamic-programming work counter is initialized. This identifies a polynomial preprocessing bottleneck in the sampled window, not evidence that the exact search itself had become exponential.
+
+The ten-second, ten-samples-per-second nonblocking observation retained 99 samples, 94 with a decomposition frame. Some stacks were incomplete. This is a brief diagnostic, not a complete runtime decomposition or a measured optimization speedup. An equivalence-tested bitset implementation of the same ordering is a justified future engineering experiment. No backend was changed in the running comparison.
+
+Retained evidence: `long-proof-stack-001.txt`, `long-proof-profile-001.txt`, its log, and `long-proof-profile-001-provenance.json`. The profiler was installed separately from the pinned research environment. See the [profiler's documentation](https://github.com/benfred/py-spy) for its external sampling mechanism and nonblocking limitations. Sampling overhead was not independently measured; the shared-laptop and diagnostic-instrumentation qualification remains part of the timing evidence.
+
 ### Outstanding experiments
 
 1. Complete all five policies on all five fixed-pool seeds and analyze the prespecified frontier-versus-legacy contrast.
