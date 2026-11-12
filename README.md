@@ -87,6 +87,7 @@ The `tests / scientific (push)` job runs the full test suite, selected Ruff chec
 - [Developer guide and CI](docs/DEVELOPMENT.md)
 - [Certification methods and scientific contract](docs/CERTIFICATION_GUIDE.md)
 - [Evidence and reproduction](docs/EVIDENCE_GUIDE.md)
+- [Controlled promotion experiments](benchmarks/phase4/README.md) and [interim evidence](docs/PHASE4_PROGRESS.md): ongoing matched-compute research; no policy-superiority conclusion yet.
 - [Source structure](src/README.md), [tests](tests/README.md), [experiment scripts](scripts/README.md)
 - [Historical results](docs/RESULTS.md) and [limitations](docs/LIMITATIONS.md)
 - [Large-population report](reports/large_scale/FTQEC_SCIENTIFIC_REPORT.md)
