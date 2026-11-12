@@ -97,11 +97,12 @@ def build_pool(spec,root,seed,count):
         if old['protocol']!=spec['identity'] or old['seed']!=seed or old['proposals']!=count or digest({k:v for k,v in old.items() if k!='hash'})!=old['hash']:
             raise ValueError('Immutable pool mismatch')
         return old
-    code=parse(spec['code']);settings=dict(spec['settings'],code_identity=code.input.identity)
+    code=parse(spec['code']);settings=dict(spec['settings'],code_identity=code.input.identity,decoder='bposd',seed=seed,p=spec['settings']['noise'])
     identity=digest(dict(protocol=spec['identity'],kind='pool',seed=seed,count=count))
     run=Ledger(root,identity,spec['source'],settings,seed)
     db=run.db
     state=db.get_meta('state',dict(index=0,pairs=[],aliases=[],outcomes=[],status='RUNNING'))
+    state.update(code=code.input.to_dict())
     db.set_meta('state',state)
     try:
         while state['index']<count:
@@ -148,10 +149,12 @@ def compare(spec,pool_path,root,policy,seed):
     pool_path=Path(pool_path);pool=json.loads(pool_path.read_text())
     if digest({k:v for k,v in pool.items() if k!='hash'})!=pool['hash']:raise ValueError('Pool integrity failure')
     if pool['protocol']!=spec['identity']:raise ValueError('Pool protocol mismatch')
-    code=parse(spec['code']);settings=dict(spec['settings'],code_identity=code.input.identity)
+    code=parse(spec['code']);settings=dict(spec['settings'],code_identity=code.input.identity,decoder='bposd',seed=seed,
+                                         generator_seed=pool['seed'],p=spec['settings']['noise'])
     identity=digest(dict(protocol=spec['identity'],pool=pool['hash'],policy=policy,seed=seed))
     run=Ledger(root,identity,spec['source'],settings,seed,pool['shared_cpu']);db=run.db
     state=db.get_meta('state',dict(index=0,positive=[],events=[],status='RUNNING'))
+    state.update(code=code.input.to_dict())
     pairs=order([p for p in pool['pairs'] if p['eligible']],policy,seed,n=code.checks.n)
     checkpoints=[pool['shared_cpu']+v for v in spec['promotion_cpu_checkpoints']]
     try:

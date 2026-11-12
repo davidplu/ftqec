@@ -11,8 +11,20 @@ from ..circuits.model import Circuit
 from ..circuits.identity import physical_identity
 
 
-def generate(code,index,seed,strategy,parents):
-    if strategy in ('structured','hybrid'):return proposal(code,index,seed,strategy,parents)
+def repair_parents(parents,target):
+    """An exact-distance upper witness is not a below-target repair failure."""
+    selected=[]
+    for row in parents:
+        copy=dict(row);cert=dict(row.get('certify',{}));screen=dict(row.get('screen',{}))
+        for record,allowed in ((cert,cert.get('status')=='INVALID' and row.get('independent_verification',{}).get('verified',False)),
+                               (screen,screen.get('status')=='FAULT_INVALID' and screen.get('verification',{}).get('verified',False))):
+            if not allowed or not record.get('witness') or len(record['witness']['faults'])>=target:record.pop('witness',None)
+        copy.update(certify=cert,screen=screen);selected.append(copy)
+    return selected
+
+
+def generate(code,index,seed,strategy,parents,target=6):
+    if strategy in ('structured','hybrid'):return proposal(code,index,seed,strategy,repair_parents(parents,target))
     if strategy!='random_unfiltered':raise ValueError('Unknown generation strategy')
     # The random baseline shares the architecture/ancilla distribution but has no
     # crossing-parity order prefilter. Actual compiled instrument validation remains.
@@ -39,11 +51,13 @@ def selected_window(pairs,policy,seed,n):
 
 
 def optimize(spec,root,seed,policy,strategy='hybrid'):
-    code=parse(spec['code']);settings=dict(spec['settings'],code_identity=code.input.identity)
+    code=parse(spec['code']);settings=dict(spec['settings'],code_identity=code.input.identity,decoder='bposd',seed=seed,
+                                         promotion_seed=seed+100000,p=spec['settings']['noise'])
     identity=digest(dict(protocol=spec['identity'],kind='adaptive',seed=seed,policy=policy,generator=strategy))
     run=Ledger(root,identity,spec['source'],settings,seed+100000);db=run.db
     state=db.get_meta('state',dict(index=0,pairs=[],aliases=[],outcomes=[],positive=[],events=[],phase='generate',
                                  pending=[],build_cursor=0,selected=[],selection_cursor=0,window_pairs=[],status='RUNNING'))
+    state.update(code=code.input.to_dict())
     checkpoints=spec['total_cpu_checkpoints'];goal=spec['candidate_goal'];maximum=max(checkpoints)
     state['status']='RUNNING'
 
@@ -82,7 +96,7 @@ def optimize(spec,root,seed,policy,strategy='hybrid'):
                         state['status']='COMPLETE';break
                     parents=[db.get(cid) for cid in db.parent_ids(8,seed+state['index'])]
                     count=min(10,goal-state['index'])
-                    state['pending']=[dict(index=i,**generate(code,i,seed,strategy,parents)) for i in range(state['index'],state['index']+count)]
+                    state['pending']=[dict(index=i,**generate(code,i,seed,strategy,parents,settings['target'])) for i in range(state['index'],state['index']+count)]
                     state['build_cursor']=0;state['window_pairs']=[]
                     for p in state['pending']:db.event('proposal',p)
                     persist()

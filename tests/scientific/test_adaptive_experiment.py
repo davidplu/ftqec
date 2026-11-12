@@ -22,3 +22,17 @@ def test_generation_strategies_preserve_resource_distribution_and_provenance():
             assert raw['genome'][field]==structured['genome'][field]
         assert sorted(raw['genome']['order'])==sorted(structured['genome']['order'])
         assert raw['raw_order_draws']==1
+
+
+def test_repair_uses_only_independently_verified_below_target_witnesses():
+    from ftqec.experiments.adaptive import repair_parents
+    upper=dict(status='CERTIFIED',witness=dict(faults=[{}]*6))
+    negative=dict(status='INVALID',witness=dict(faults=[{}]*3))
+    parents=[dict(id='positive',certify=upper,independent_verification=dict(verified=True)),
+             dict(id='invalid',certify=negative,independent_verification=dict(verified=True)),
+             dict(id='unchecked',certify=negative)]
+    checked=repair_parents(parents,6)
+    assert 'witness' not in checked[0]['certify']
+    assert checked[1]['certify']['witness']==negative['witness']
+    assert 'witness' not in checked[2]['certify']
+    assert parents[0]['certify']['witness']==upper['witness']

@@ -44,7 +44,8 @@ def test_checkpoint_excludes_results_finishing_at_or_after_threshold():
 
 
 @pytest.mark.parametrize('basis',['X','Z'])
-def test_code_derived_upper_witness_matches_independent_exhaustive_oracle(tmp_path,basis):
+@pytest.mark.parametrize('method',['auto','time_collapse'])
+def test_code_derived_upper_witness_matches_independent_exhaustive_oracle(tmp_path,basis,method):
     c=memory(term_schedule(parse(small()),serial=True),2,basis)
     faults=[fault_at(c,i,'I') for i,o in enumerate(c.operations) if o.gate=='M' and o.qubits[0]<c.code.n]
     minimum=None
@@ -55,11 +56,11 @@ def test_code_derived_upper_witness_matches_independent_exhaustive_oracle(tmp_pa
         if minimum is not None:break
     witness=boundary_witness(c,3)
     assert witness and witness['weight']==minimum and verify_witness(c,witness)['verified']
-    cert=certify(c,minimum,200000,tmp_path,'auto')
+    cert=certify(c,minimum,200000,tmp_path,method)
     checked=verify_exact(dict(circuit=c.to_dict(),certificate=cert),200000)
     if basis=='X':assert checked['status']=='CERTIFIED' and checked['exact_distance']==minimum
     else:assert checked['status']=='INVALID' and checked['verified']  # A lower-weight circuit fault exists.
-    negative=certify(c,minimum+1,200000,tmp_path/'negative','auto')
+    negative=certify(c,minimum+1,200000,tmp_path/'negative',method)
     checked=verify_exact(dict(circuit=c.to_dict(),certificate=negative),200000)
     assert checked['status']=='INVALID' and checked['verified']
 

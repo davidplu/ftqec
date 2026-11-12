@@ -43,8 +43,12 @@ def verify_exact(payload,work):
     if upper is not None:
         if upper['weight']<original['lower_bound']:
             return dict(status='CONTRADICTION',verified=False,witness=upper,certificate=original)
-        cert.update(upper_bound=upper['weight'],upper_witness=upper)
-        if 'result' in cert:cert['result']=dict(cert['result'],upper_bound=upper['weight'])
+        # Existing exact backends have different public upper-witness schemas.
+        # Preserve their contracts instead of making a valid physical witness
+        # invisible to the row-relaxation verifier.
+        field='witness' if cert.get('proof',{}).get('method')=='physical-row-relaxation-1' else 'upper_witness'
+        cert.update(upper_bound=upper['weight'],**{field:upper})
+        if 'result' in cert:cert['result']=dict(cert['result'],upper_bound=upper['weight'],witness=cert.get('witness'))
         if cert['lower_bound']==upper['weight']:cert['exact_distance']=upper['weight']
     check=verify(c,cert,work)
     exact=check['verified'] and cert.get('exact_distance')==target and cert['lower_bound']>=target

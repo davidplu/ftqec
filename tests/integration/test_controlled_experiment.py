@@ -33,6 +33,10 @@ def test_fixed_pool_resume_and_independent_policy_accounting(tmp_path):
             cid=next(db.summaries())['id']
         from ftqec.delivery.export import resolve
         metadata,row=resolve(root,cid)
-        assert metadata['source']==spec['source'] and row['id']==cid
+        assert metadata['source']==spec['source'] and row['id']==cid and metadata['code']['n']==6
+        from ftqec.delivery.export import export_result
+        from ftqec.delivery.verify import verify_bundle
+        export_result(root,cid,root/'exported')
+        assert verify_bundle(root/'exported',work=200000)['verified']
         run('compare','--pool',str(tmp_path/'pool/pool.json'),'--seed','174001','--policy',policy,'--output',str(root))
         with PopulationStore(root/'population.sqlite',readonly=True) as db:assert db.worker_cpu()==worker_cpu
