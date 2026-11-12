@@ -9,13 +9,22 @@ def test_scaling_analysis_uses_final_frozen_checkpoint_and_reports_missing(tmp_p
                 promotion_cpu_checkpoints=[1000, 5000])
     spec['identity'] = digest(spec)
     save(tmp_path / 'protocol-A-v1.json', spec)
+    pool_root = tmp_path / 'fixed-pool/seed-74011/pool'
+    pool_root.mkdir(parents=True)
+    with PopulationStore(pool_root / 'population.sqlite'):
+        pass
+    pool = dict(protocol=spec['identity'], shared_cpu=0, proposals=0, pairs=[], aliases=[], outcomes=[])
+    pool['hash'] = digest(pool)
+    save(pool_root / 'pool-accounted.json', pool)
     for policy, values in [('frontier', [0.1, 0.4]), ('legacy', [0.2, 0.2])]:
         root = tmp_path / 'fixed-pool/seed-74011' / policy
         root.mkdir(parents=True)
         with PopulationStore(root / 'population.sqlite'):
             pass
+        save(root / 'controller-process-1.json', dict(whole_controller_cpu=6000, wall=6000,
+             sampled_peak_rss=100, supervisor_cpu=1))
         save(root / 'comparison.json', dict(protocol=spec['identity'], accounting_censored=False,
-             state=dict(positive=[], events=[]), checkpoints=[dict(cpu=c, coverage='OBSERVED',
+             state=dict(positive=[], events=[], index=0, status='EXPERIMENT_CHECKPOINT_REACHED'), checkpoints=[dict(cpu=c, coverage='OBSERVED',
              frontier=[], hypervolume=h) for c, h in zip([1000, 5000], values)]))
     result = analyze(tmp_path)
     assert result['primary_promotion_cpu_checkpoint'] == 5000
@@ -23,8 +32,8 @@ def test_scaling_analysis_uses_final_frozen_checkpoint_and_reports_missing(tmp_p
     assert not result['primary_complete']
     assert result['sign_randomization'] is None
     assert len(result['missing']) == 2
-    assert all(r['controller_cpu'] is None for r in result['compute'])
-    assert all(r['external_measurement_driver_cpu'] is None for r in result['compute'])
+    assert all(r['controller_cpu'] == 6000 for r in result['compute'])
+    assert all(r['external_measurement_driver_cpu'] == 1 for r in result['compute'])
 
 
 def test_adaptive_analysis_retains_censored_arms_and_sweep_nonactivation(tmp_path):
@@ -51,3 +60,12 @@ def test_adaptive_analysis_retains_censored_arms_and_sweep_nonactivation(tmp_pat
     assert not result['records'][0]['valid_comparison']
     assert result['compute'][0]['final_sweep_pair_evaluations'] == 0
     assert not result['frontier_minus_legacy'][0]['complete']
+
+
+def test_queue_exhaustion_does_not_impute_unconsumed_compute():
+    from benchmarks.phase4.analyze_fixed_pool import measured_coverage
+    point = dict(cpu=1000, coverage='OBSERVED')  # Raw exhausted-queue convention.
+    receipt = dict(controller_cpu=20, worker_cpu=80)
+    assert measured_coverage(point, receipt, shared_cpu=500) == 'NOT_REACHED'
+    assert measured_coverage(point, receipt, shared_cpu=900) == 'OBSERVED'
+    assert measured_coverage(point, dict(controller_cpu=None, worker_cpu=2000)) == 'UNCONFIRMED_ACCOUNTING'

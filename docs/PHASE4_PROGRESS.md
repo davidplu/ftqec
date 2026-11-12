@@ -2,6 +2,8 @@
 
 This is an interim research record, not the final Phase 4 report. The fixed-pool campaign is running. Its primary matched-seed contrast is incomplete, so no promotion-policy superiority is established. The snapshots below describe the first completed arm; later results must be read from their own immutable receipts.
 
+Checkpoint interpretation follows [analysis amendment 1](PHASE4_ANALYSIS_AMENDMENT_1.md): an exhausted queue does not count as consumption of an unreached CPU checkpoint. Earlier raw coverage fields and interim analyses remain preserved; corrected analyses retain both raw and measured coverage.
+
 ## Preserved baseline and corrected execution
 
 The preservation audit checked all 1,327 historical manifest members, eight exported baseline/control circuits, and eight physical weight-six upper witnesses. The preserved baseline passed 175 tests. The corrected experimental implementation passed 189 tests. Raw records are in `results/phase4/epoch-20261111/phase3-integrity.json`, `baseline-replays.json`, `baseline-upper-replays.json`, `baseline-tests.log`, and `results/phase4/epoch-20261111-v2/adapter-fix-full-tests.log`.

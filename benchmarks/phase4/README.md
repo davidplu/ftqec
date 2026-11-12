@@ -5,6 +5,7 @@ These scripts compare promotion policies using measured CPU and independently ve
 - [Original protocol](../../docs/PHASE4_PROTOCOL.md)
 - [Accounting correction](../../docs/PHASE4_PROTOCOL_V2.md)
 - [Verification-contract correction](../../docs/PHASE4_PROTOCOL_V3.md)
+- [Measured-checkpoint analysis amendment](../../docs/PHASE4_ANALYSIS_AMENDMENT_1.md)
 
 The active fixed-pool epoch is `results/phase4/epoch-20261112-v3`. Earlier epochs are retained, including interrupted tasks and rejected proof packets. The corrected source is `e882794750da70f76ce6e7163aa19f42d48a09b1ad743a31c00d0f915e5a8557`. No policy receives another policy's proof answers.
 

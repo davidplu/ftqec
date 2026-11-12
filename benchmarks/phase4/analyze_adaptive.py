@@ -5,12 +5,11 @@ import statistics
 from pathlib import Path
 
 from ftqec.results.artifacts import digest, save
-from ftqec.optimization.store import PopulationStore
 
 try:
-    from .analyze_fixed_pool import compute_receipt, sign_randomization
+    from .analyze_fixed_pool import compute_receipt, sign_randomization, measured_coverage, ANALYSIS_CONVENTION
 except ImportError:
-    from analyze_fixed_pool import compute_receipt, sign_randomization
+    from analyze_fixed_pool import compute_receipt, sign_randomization, measured_coverage, ANALYSIS_CONVENTION
 
 
 def sealed(path):
@@ -43,18 +42,17 @@ def analyze(path):
                     if data['protocol'] != spec['identity'] or any(data[k] != v for k, v in label.items()):
                         raise ValueError('Comparison identity mismatch')
                     state = data['state']
-                    with PopulationStore(root / 'population.sqlite', readonly=True) as db:
-                        sector_counts = {str(k): n for k, n in db.db.execute(
-                            'SELECT status,count(*) FROM candidates GROUP BY status')}
-                    compute.append(dict(**label, **compute_receipt(root),
+                    receipt = compute_receipt(root)
+                    compute.append(dict(**label, **receipt,
                         completed_proposals=state['index'], distinct_compiled_pairs=len(state['pairs']),
                         construction_outcomes=len(state['outcomes']), aliases=len(state['aliases']),
-                        certified_pairs=len(state['positive']), sector_status_counts=sector_counts,
+                        certified_pairs=len(state['positive']),
                         final_sweep_pair_evaluations=sum(e['phase'] == 'final_sweep' for e in state['events']),
                         last_phase=state['phase'], status=state['status']))
                     for point in data['checkpoints']:
-                        rows.append(dict(**label, cpu_checkpoint=point['cpu'], coverage=point['coverage'],
-                            valid_comparison=point['coverage'] == 'OBSERVED' and not data['accounting_censored'],
+                        coverage = measured_coverage(point, receipt)
+                        rows.append(dict(**label, cpu_checkpoint=point['cpu'], raw_coverage=point['coverage'], coverage=coverage,
+                            valid_comparison=coverage == 'OBSERVED' and not data['accounting_censored'],
                             hypervolume=point['hypervolume'], frontier=point['frontier'],
                             best={k: min((p['resources'][k] for p in point['frontier']), default=None)
                                   for k in ('Q', 'D', 'QD', 'two_q_gates')}))
@@ -73,7 +71,7 @@ def analyze(path):
                 sign_randomization=sign_randomization(values) if complete else None))
         cases.append(dict(name=case['name'], protocol=spec['identity'], records=rows, compute=compute,
                           missing=missing, frontier_minus_legacy=contrasts))
-    result = dict(plan=plan['identity'], source=plan['source'], cases=cases,
+    result = dict(plan=plan['identity'], source=plan['source'], analysis_convention=ANALYSIS_CONVENTION, cases=cases,
         qualification='Adaptive results are separate from fixed-pool results. Generation comparisons must join '
                       'the prospectively shared main72/hybrid/frontier control; absent strategy arms are NOT_RUN. '
                       'No final-sweep evaluations does not prove that a sweep would be ineffective with more compute.')
