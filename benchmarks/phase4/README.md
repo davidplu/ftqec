@@ -28,6 +28,10 @@ python benchmarks/phase4/run_adaptive.py --plan results/phase4/epoch-20261112-ad
 
 The adaptive driver checks the fixed-pool prerequisite. Its frontier policy preserves legacy-window promotion followed by the final sweep. A finite compute checkpoint can arrive before that sweep; this is a measured outcome, not permission to change the policy.
 
+`run_stages.py` can supervise the declared sequence while an existing fixed-pool driver finishes. It does not launch a second copy of that driver. It checks completed, uncensored prerequisites, analyzes them with the frozen analysis implementation, then runs the main adaptive study and the 1000-proposal study. It stops for review of the conditional 10000-proposal gate before generation/transfer studies. Finalist selection, reliability, final export audits, and the final report are separate remaining work, not silently marked complete by the queue.
+
+The stage queue retains `plan.json`, `state.json`, and per-attempt logs. Its outer coordination CPU is separate from candidate-controller accounting. A failure records BLOCKED and stops subsequent stages. `cancel.json` in the queue directory prevents another stage; cancel an active scientific controller through that run's own cancellation file. Resume with identical arguments and source. Never launch concurrent queues for the same output directory.
+
 ## Later stages
 
 `freeze_scaling.py` freezes the predeclared 1000-proposal, seed-74011 experiment with all five policies and preparation CPU plus 1000/2500/5000 CPU-second checkpoints. Launch it only after the main adaptive comparison. This is a single-seed descriptive scale study. Within that pool the policies share total compute checkpoints; comparing it directly with the 100-proposal results does **not** isolate population-size effects at equal total CPU. That additional claim requires separately frozen common absolute checkpoints.
