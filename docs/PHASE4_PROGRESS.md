@@ -35,6 +35,22 @@ Evidence: `results/phase4/epoch-20261112-v3/fixed-pool/seed-74011/{pool,random}/
 
 ## Remaining scientific obligations
 
+### Three completed arms of the first seed
+
+The current corrected analysis is `interim-analysis-004.json`. At the common checkpoint of preparation CPU plus 1,000 seconds (3,073.28125 total algorithm CPU seconds for this pool):
+
+| Policy | Certified paired frontier: (Q, worse D, worse QD) | Frozen hypervolume | Actual policy CPU through exit, excluding shared preparation |
+|---|---|---:|---:|
+| Direct | (144, 82, 11,808) | 0.211269699375 | 1,026.203125 |
+| Random | (84, 328, 27,552); (144, 76, 10,944) | 0.36717061125 | 1,000.96875 |
+| Frontier | (144, 64, 9,216) | 0.2181984 | 4,056.296875 |
+
+Every listed circuit uses 2,592 two-qubit gates per sector. The reference point remains Q=200, D=1,024, QD=204,800, gates=20,000. These are separate frontier tuples; the minimum Q and minimum D need not occur in one circuit. Random's larger scalar hypervolume in this seed does not mean it dominates frontier's shallower design in every resource.
+
+The frontier arm's admitted Q=78 pair caused substantial overshoot. Its X and Z certification attempts returned UNKNOWN/MEMORY_LIMIT after 1,751.34375 and 1,622.0 worker CPU seconds respectively. Both outcomes are retained; neither yields a paired certificate. Results finishing after the checkpoint do not count at that checkpoint. The frontier arm completed ten pair evaluations with five certified sectors, nine INVALID sectors, and six UNKNOWN sectors; only one complete pair qualified. Actual arm elapsed time was 3,989.9518131001387 seconds. Raw evidence includes `Q78-X-censored-certification.json`, `Q78-Z-certification-outcome.json`, and the whole-controller receipt.
+
+The scalar resource-ranked arm was running at this update. Legacy and the other seeds remained incomplete. No matched frontier-versus-legacy seed comparison was yet complete, and there is no overall policy-superiority conclusion.
+
 ### Post-hoc selection diagnosis
 
 The frozen seed-74011 ranking placed the certified Q=84 pair first in random order, 24th in direct order, 33rd in frontier order, and outside the legacy selection. Its sole raw-resource dominator was pair `32b4577c6e6fa981a93065ba5d763fb08d6956cdd4243a347ea6318e58302d87`, with Q=84, worse-sector D=286, QD=24,024, and 2,160 two-qubit gates. Both sectors of that apparently cheaper pair were subsequently independently verified INVALID by the frontier arm.
