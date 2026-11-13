@@ -6,6 +6,8 @@ Use a dedicated virtual environment with Python 3.11 or newer. Python 3.12 is th
 
 For an end-user installation use `python -m pip install .` or `python -m pip install '.[matching]'`. Confirm `ftqec --help` works. The package's scientific source identity is separate from its public version number: two installations labeled 0.1.0 may contain different research source bytes.
 
+For 2BGA repeated-memory optimization with BP-OSD, install `python -m pip install '.[bposd]'`. Use `python -m pip install -e '.[dev,matching,bposd]'` for the full development environment exercised by CI. The BP-OSD extra installs `ldpc` and SciPy. Start with the included `examples/two_block_small.json` and the [README workflow](../README.md#2bga-codes-and-the-new-distance-methods); larger supplied research codes and private correspondence are not bundled.
+
 ## Common failures
 
 | Symptom | Diagnosis and action |

@@ -8,7 +8,9 @@ authors' accelerated kernels or claim their benchmark performance.
 The upstream implementation is [tropidist](https://github.com/Fanerst/tropidist),
 audited at `b03ec2d4077f287f89f97b5c2c16ce5ce17c2c58`, MIT license.
 The new FTQEC source preserves the original physical fault inventory and all
-existing certifiers. `auto` retains its previous behavior.
+existing certifiers. The current `auto` portfolio can select this path for eligible
+repeated-memory circuits; `auto_legacy` retains the previous selection behavior.
+See [the paired-memory guide](PHASE3_OPTIMIZATION.md) for the later integration.
 
 ## Public use
 

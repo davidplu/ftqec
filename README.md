@@ -2,7 +2,7 @@
 
 FTQEC 0.1.0 is a research toolkit for synthesizing, screening, simulating, and independently certifying stabilizer-code syndrome-extraction circuits. It compiles actual circuits and preserves the distinction between physical resource estimates, simulation results, harmful fault witnesses, and rigorous certificates.
 
-**Research status:** this development branch adds code-only paired-memory architecture search and automatic physical-mechanism/time-collapse certification. The local November 11 audit independently verified new six-round [[72,12,6]] alternatives: a 120-qubit pair at depth 124/122, and a 144-qubit pair at depth 64/62, both at exact circuit distance six under the declared operation-local model. The shallow pair was certified in a recorded resource-selected follow-up to the autonomous population; it was not a reference seed. The lower-qubit alternative trades depth for qubits. These results do not establish general hardware-memory guarantees or a logical-error-rate advantage. See the [paired-memory guide](docs/PHASE3_OPTIMIZATION.md), [current evidence report](docs/PHASE3_RESULTS.md), and [earlier certification integration](docs/TROPIDIST_INTEGRATION.md). Matched optimizer comparisons and larger-scale validation remain incomplete. Large proof databases and full local history are not included in the publication snapshot; see [publication scope](PUBLICATION_STATUS.md).
+**Research status:** FTQEC includes code-only paired-memory architecture search and automatic physical-mechanism/time-collapse certification. The local November 11 audit independently verified new six-round [[72,12,6]] alternatives: a 120-qubit pair at depth 124/122, and a 144-qubit pair at depth 64/62, both at exact circuit distance six under the declared operation-local model. The shallow pair was certified in a recorded resource-selected follow-up to the autonomous population; it was not a reference seed. The lower-qubit alternative trades depth for qubits. These results do not establish general hardware-memory guarantees or a logical-error-rate advantage. See the [paired-memory guide](docs/PHASE3_OPTIMIZATION.md), [current evidence report](docs/PHASE3_RESULTS.md), and [earlier certification integration](docs/TROPIDIST_INTEGRATION.md). Matched optimizer comparisons and larger-scale validation remain incomplete. Large proof databases and full local history are not included in the publication snapshot; see [publication scope](PUBLICATION_STATUS.md).
 
 The controlled-comparison campaign now has an immutable-pool experiment runner, a separate adaptive runner, actual worker/controller CPU ledgers, independent exact-distance checks, and durable resume support. These are experimental tools, not evidence that one promotion policy is better. The current prospective settings and the preserved bookkeeping correction are documented in the [controlled-comparison protocol](docs/PHASE4_PROTOCOL.md) and [version-2 amendment](docs/PHASE4_PROTOCOL_V2.md). Finite comparison budgets stop new dispatch; they do not impose a global optimizer timeout or a worker CPU cutoff.
 
@@ -24,6 +24,20 @@ ftqec list-results --run runs/steane
 ```
 
 This finite run is a smoke experiment, not a promise of a certified finalist. Omit `--generations` only when you intend an anytime optimization run. Per-task safeguards still apply. Matching is optional; install `.[dev]` without it for the base development environment. Decoder fallback must be reported when interpreting reliability results.
+
+## 2BGA codes and the new distance methods
+
+Install the optional BP-OSD decoder and validate the included small 2BGA example:
+
+```bash
+python -m pip install -e '.[dev,matching,bposd]'
+ftqec validate-2bga examples/two_block_small.json --output runs/2bga-validation.json
+ftqec optimize examples/two_block_small.json --phase3 --memory-rounds 2 --target 2 --candidate-goal 2 --window 2 --promotion 1 --memory-shots 4 --decoder bposd --proof-method auto --proof-work 200000 --output runs/2bga-smoke
+```
+
+This small example is an installation check, not the distance-six research benchmark. For your own supported 2BGA input, use the [paired-memory guide](docs/PHASE3_OPTIMIZATION.md) to select rounds, target distance, and search settings. Both X and Z sectors must be independently certified before a pair enters the certified frontier.
+
+The new exact path checks physical fault mechanisms, applies a sound time-collapse lower-bound reduction, and can use independently checked affine lifting. Select `--proof-method time_collapse` explicitly, or let `auto` choose based on the input; `auto_legacy` retains the earlier portfolio. This is a Python implementation motivated by the new distance work, not the upstream accelerated kernels. See [algorithm details and eligibility](docs/TROPIDIST_INTEGRATION.md). Proof-work and memory safeguards remain; incomplete proofs return UNKNOWN. The paired-memory driver has no worker CPU or wall-clock timeout.
 
 ## What FTQEC does
 
